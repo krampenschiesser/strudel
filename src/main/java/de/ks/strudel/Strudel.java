@@ -16,6 +16,7 @@
 package de.ks.strudel;
 
 import de.ks.strudel.option.Options;
+import de.ks.strudel.route.FilterType;
 import de.ks.strudel.route.HttpMethod;
 import de.ks.strudel.route.RouteBuilder;
 import de.ks.strudel.route.Router;
@@ -76,6 +77,22 @@ public class Strudel {
 
   public void delete(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
     add(HttpMethod.DELETE, path, enhancer, handler);
+  }
+
+  public RouteBuilder before(Handler handler) {
+    return before("/*", handler);
+  }
+
+  public RouteBuilder after(Handler handler) {
+    return after("/*", handler);
+  }
+
+  public RouteBuilder before(String path, Handler handler) {
+    return add(HttpMethod.ANY, path, null, handler).filter(FilterType.BEFORE);
+  }
+
+  public RouteBuilder after(String path, Handler handler) {
+    return add(HttpMethod.ANY, path, null, handler).filter(FilterType.AFTER);
   }
 
   public RouteBuilder add(HttpMethod method, String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {

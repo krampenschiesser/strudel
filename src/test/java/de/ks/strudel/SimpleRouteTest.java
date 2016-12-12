@@ -40,7 +40,7 @@ public class SimpleRouteTest {
   @TestFactory
   Stream<DynamicTest> simplePathsAllMethods() {
     List<HttpMethod> httpMethods = Arrays.asList(HttpMethod.values());
-    return httpMethods.stream().map(m -> DynamicTest.dynamicTest("simple" + m.name(), wrap(this, () -> testHttpRoute(m))));
+    return httpMethods.stream().filter(m -> m != HttpMethod.ANY).map(m -> DynamicTest.dynamicTest("simple" + m.name(), wrap(this, () -> testHttpRoute(m))));
   }
 
   private void testHttpRoute(HttpMethod m) {

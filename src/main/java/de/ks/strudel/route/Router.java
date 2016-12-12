@@ -15,6 +15,7 @@
  */
 package de.ks.strudel.route;
 
+import de.ks.strudel.HaltException;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import io.undertow.Handlers;
@@ -33,10 +34,41 @@ import javax.inject.Singleton;
 public class Router {
   public static final int MTU = 1480;
   private final RoutingHandler routing;
-  private Predicate contentSizeAbove100 = Predicates.maxContentSize(MTU);
+  private final RoutingHandler before;
+  private final Predicate contentSizeAbove100 = Predicates.maxContentSize(MTU);
+  private final RoutingHandler after;
+  private final HttpHandler mainHandler;
 
   public Router() {
     routing = Handlers.routing();
+    before = Handlers.routing();
+    after = Handlers.routing();
+    HttpHandler noop = ex -> "".toCharArray();
+    before.setFallbackHandler(noop);
+    before.setInvalidMethodHandler(null);
+    after.setFallbackHandler(noop);
+    after.setInvalidMethodHandler(null);
+    routing.setFallbackHandler(after);
+    routing.setInvalidMethodHandler(after);
+
+    mainHandler = exchange -> {
+      try {
+        before.handleRequest(exchange);
+        if (!exchange.isComplete()) {
+          routing.handleRequest(exchange);
+        }
+        after.handleRequest(exchange);
+        if (!exchange.isResponseStarted()) {
+          exchange.setStatusCode(HttpStatus.NOT_FOUND.getValue());
+        }
+        if (!exchange.isComplete()) {
+          exchange.endExchange();
+        }
+      } catch (HaltException e) {
+        exchange.setStatusCode(e.getStatus());
+        exchange.endExchange();
+      }
+    };
   }
 
   private HttpHandler wrapInGzipHandler(HttpHandler handler) {
@@ -48,22 +80,34 @@ public class Router {
   }
 
   public void addRoute(Route route) {
-    HttpHandler httpHandler = ex -> {
+    HttpHandler httpHandler;
+
+    if (route.isGzip()) {
+      httpHandler = wrapInGzipHandler(createRouteHandler(route));
+    } else {
+      httpHandler = createRouteHandler(route);
+    }
+
+    RoutingHandler rh;
+    if (route.isFilter()) {
+      rh = route.getFilterType() == FilterType.BEFORE ? before : after;
+    } else {
+      rh = routing;
+    }
+    route.getMethods().forEach(m -> rh.add(m, route.getPath(), httpHandler));
+  }
+
+  private HttpHandler createRouteHandler(Route route) {
+    return ex -> {
       Object retval = route.getHandler().handle(new Request(ex), new Response(ex));
       if (retval != null) {
         ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
-        ex.getResponseSender().send(String.valueOf(retval));
-      } else {
-        ex.setStatusCode(HttpStatus.NOT_FOUND.getValue()).getResponseSender().close();
+        ex.getResponseSender().send(String.valueOf(retval), new NoCompletionCallback());
       }
     };
-    if (route.isGzip()) {
-      httpHandler = wrapInGzipHandler(httpHandler);
-    }
-    routing.add(route.getMethod().getMethod(), route.getPath(), httpHandler);
   }
 
   public HttpHandler getHandler() {
-    return routing;
+    return mainHandler;
   }
 }

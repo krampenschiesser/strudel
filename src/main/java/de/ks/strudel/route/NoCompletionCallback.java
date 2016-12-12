@@ -13,32 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel;
+package de.ks.strudel.route;
 
-import de.ks.strudel.route.HttpStatus;
+import io.undertow.io.IoCallback;
+import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
+import org.xnio.IoUtils;
 
-public class Response {
-  protected HttpServerExchange exchange;
+import java.io.IOException;
 
-  public Response(HttpServerExchange exchange) {
-    this.exchange = exchange;
+class NoCompletionCallback implements IoCallback {
+  @Override
+  public void onComplete(HttpServerExchange exchange, Sender sender) {
   }
 
-  public Response status(HttpStatus status) {
-    return status(status.getValue());
-  }
-
-  public Response status(int code) {
-    exchange.setStatusCode(code);
-    return this;
-  }
-
-  public void halt(HttpStatus status) {
-    halt(status.getValue());
-  }
-
-  public void halt(int status) {
-    throw new HaltException(status);
+  @Override
+  public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
+    try {
+      exchange.endExchange();
+    } finally {
+      IoUtils.safeClose(exchange.getConnection());
+    }
   }
 }

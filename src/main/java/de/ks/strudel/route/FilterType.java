@@ -13,32 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel;
+package de.ks.strudel.route;
 
-import de.ks.strudel.route.HttpStatus;
-import io.undertow.server.HttpServerExchange;
-
-public class Response {
-  protected HttpServerExchange exchange;
-
-  public Response(HttpServerExchange exchange) {
-    this.exchange = exchange;
-  }
-
-  public Response status(HttpStatus status) {
-    return status(status.getValue());
-  }
-
-  public Response status(int code) {
-    exchange.setStatusCode(code);
-    return this;
-  }
-
-  public void halt(HttpStatus status) {
-    halt(status.getValue());
-  }
-
-  public void halt(int status) {
-    throw new HaltException(status);
-  }
+public enum FilterType {
+  BEFORE, AFTER;
 }

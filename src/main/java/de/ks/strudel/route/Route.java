@@ -16,18 +16,25 @@
 package de.ks.strudel.route;
 
 import de.ks.strudel.Handler;
+import io.undertow.util.HttpString;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class Route {
   private final Handler handler;
   private final HttpMethod method;
   private final String path;
   private final boolean gzip;
+  private final FilterType filterType;
 
   public Route(RouteBuilder routeBuilder) {
     handler = routeBuilder.handler;
     method = routeBuilder.method;
     path = routeBuilder.path;
     gzip = routeBuilder.gzip;
+    filterType = routeBuilder.filterType;
   }
 
   public Handler getHandler() {
@@ -44,5 +51,26 @@ public class Route {
 
   public boolean isGzip() {
     return gzip;
+  }
+
+  public boolean isFilter() {
+    return filterType != null;
+  }
+
+  public FilterType getFilterType() {
+    return filterType;
+  }
+
+  public List<HttpString> getMethods() {
+    if (method == HttpMethod.ANY) {
+      return Arrays.asList(//
+        HttpMethod.GET.getMethod(),//
+        HttpMethod.PUT.getMethod(),//
+        HttpMethod.POST.getMethod(),//
+        HttpMethod.DELETE.getMethod()//
+      );
+    } else {
+      return Collections.singletonList(method.getMethod());
+    }
   }
 }

@@ -15,30 +15,15 @@
  */
 package de.ks.strudel;
 
-import de.ks.strudel.route.HttpStatus;
-import io.undertow.server.HttpServerExchange;
+public class HaltException extends RuntimeException {
+  private static final long serialVersionUID = 1L;
+  private final int status;
 
-public class Response {
-  protected HttpServerExchange exchange;
-
-  public Response(HttpServerExchange exchange) {
-    this.exchange = exchange;
+  public HaltException(int status) {
+    this.status = status;
   }
 
-  public Response status(HttpStatus status) {
-    return status(status.getValue());
-  }
-
-  public Response status(int code) {
-    exchange.setStatusCode(code);
-    return this;
-  }
-
-  public void halt(HttpStatus status) {
-    halt(status.getValue());
-  }
-
-  public void halt(int status) {
-    throw new HaltException(status);
+  public int getStatus() {
+    return status;
   }
 }

@@ -18,7 +18,7 @@ package de.ks.strudel.route;
 import io.undertow.util.HttpString;
 
 public enum HttpMethod {
-  GET, PUT, POST, DELETE;
+  GET, PUT, POST, DELETE, ANY;
 
   private HttpString method;
 
@@ -28,21 +28,5 @@ public enum HttpMethod {
 
   public HttpString getMethod() {
     return method;
-  }
-
-  public static HttpMethod parse(HttpString requestMethod) {
-    if (requestMethod.equals(GET.method)) {
-      return GET;
-    }
-    if (requestMethod.equals(PUT.method)) {
-      return PUT;
-    }
-    if (requestMethod.equals(POST.method)) {
-      return POST;
-    }
-    if (requestMethod.equals(DELETE.method)) {
-      return DELETE;
-    }
-    throw new UnsupportedOperationException("Unknown request method");
   }
 }

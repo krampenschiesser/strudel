@@ -23,6 +23,7 @@ public class RouteBuilder {
   Handler handler;
   HttpMethod method;
   boolean gzip;
+  FilterType filterType;
 
   public RouteBuilder path(String path) {
     this.path = path;
@@ -65,6 +66,11 @@ public class RouteBuilder {
 
   public RouteBuilder gzip(boolean enable) {
     this.gzip = enable;
+    return this;
+  }
+
+  public RouteBuilder filter(FilterType filterType) {
+    this.filterType = filterType;
     return this;
   }
 
