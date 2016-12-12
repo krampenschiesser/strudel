@@ -17,6 +17,7 @@ package de.ks.strudel;
 
 import de.ks.strudel.route.HttpStatus;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.Headers;
 
 public class Response {
   protected HttpServerExchange exchange;
@@ -40,5 +41,18 @@ public class Response {
 
   public void halt(int status) {
     throw new HaltException(status);
+  }
+
+  public void redirect(String target) {
+    redirect(target, HttpStatus.MOVED_TEMPORARILY);
+  }
+
+  public void redirect(String target, HttpStatus status) {
+    redirect(target, status.getValue());
+  }
+
+  public void redirect(String target, int status) {
+    exchange.setStatusCode(status);
+    exchange.getResponseHeaders().add(Headers.LOCATION, target);
   }
 }

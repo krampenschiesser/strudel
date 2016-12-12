@@ -58,7 +58,7 @@ public class Router {
           routing.handleRequest(exchange);
         }
         after.handleRequest(exchange);
-        if (!exchange.isResponseStarted()) {
+        if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
           exchange.setStatusCode(HttpStatus.NOT_FOUND.getValue());
         }
         if (!exchange.isComplete()) {
