@@ -15,31 +15,42 @@
  */
 package de.ks.strudel;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import io.restassured.RestAssured;
+import io.undertow.util.Headers;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.inject.Inject;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Main {
-  public static void main(final String[] args) {
-    Injector injector = Guice.createInjector(new StrudelModule());
-    Strudel strudel = injector.getInstance(Strudel.class);
+import static org.junit.jupiter.api.Assertions.*;
 
-    strudel.get("/long", rb -> rb.gzip(true), (req, resp) -> {
-      String bla = "";
-      for (int i = 0; i < 1000; i++) {
-        bla += "Hello world\n";
-      }
-      return bla;
-    });
-    strudel.get("/short", rb -> rb.gzip(true), (req, resp) -> "Hello world\n");
+@ExtendWith(StrudelTestExtension.class)
+public class ZippedRouteTest {
+  @Inject
+  Strudel strudel;
+
+  @Test
+  void zipRoute() {
     IntStream range = IntStream.range(0, 500000);
     String text = range.mapToObj(String::valueOf).collect(Collectors.joining());
     strudel.get("/zip", (request, response) -> text).gzip(true);
-    strudel.get("/hello", (req, resp) -> "Hello world!");
-    strudel.get("/", (req, resp) -> "Hello Sauerland!");
-
     strudel.start();
+
+    io.restassured.response.Response response = RestAssured.get("/zip");
+    assertEquals(text, response.body().asString());
+    response.then().header(Headers.CONTENT_ENCODING.toString(), "gzip");
+  }
+
+  @Test
+  void noZipForSmallData() {
+    strudel.get("/zip", (request, response) -> "hallo").gzip(true);
+    strudel.start();
+
+    io.restassured.response.Response response = RestAssured.get("/zip");
+    assertEquals("hallo", response.body().asString());
+    String header = response.header(Headers.CONTENT_ENCODING_STRING);
+    assertNull(header);
   }
 }

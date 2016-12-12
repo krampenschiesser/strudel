@@ -20,6 +20,7 @@ import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import io.undertow.Handlers;
+import io.undertow.attribute.ResponseHeaderAttribute;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
@@ -39,10 +40,13 @@ public class Router {
   public static final int MTU = 1480;
   private final RoutingHandler routing;
   private final RoutingHandler before;
-  private final Predicate contentSizeAbove100 = Predicates.maxContentSize(MTU);
+  private final Predicate contentSizeAbove100 = Predicates.or(//
+    Predicates.not(Predicates.exists(new ResponseHeaderAttribute(Headers.CONTENT_LENGTH))),//Currently undertow does not always set the content length
+    Predicates.maxContentSize(MTU));
   private final RoutingHandler after;
   private final HttpHandler mainHandler;
   private final ConcurrentHashMap<Class<? extends Exception>, HandlerNoReturn> exceptionMappings = new ConcurrentHashMap<>();
+  private final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
 
   public Router() {
     routing = Handlers.routing();
@@ -101,7 +105,7 @@ public class Router {
 
   private HttpHandler wrapInGzipHandler(HttpHandler handler) {
     ContentEncodingRepository repo = new ContentEncodingRepository();
-    repo.addEncodingHandler("gzip", new GzipEncodingProvider(), 50, contentSizeAbove100);//priority unknown
+    repo.addEncodingHandler("gzip", new GzipEncodingProvider(), 50, contentSizeAbove100);//undertow doesn't always set content length
     EncodingHandler encodingHandler = new EncodingHandler(repo);
     encodingHandler.setNext(handler);
     return encodingHandler;
@@ -125,8 +129,6 @@ public class Router {
     route.getMethods().forEach(m -> rh.add(m, route.getPath(), httpHandler));
   }
 
-  final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
-
   private HttpHandler createRouteHandler(Route route) {
     return new HttpHandler() {
       @Override
@@ -138,8 +140,13 @@ public class Router {
         }
         Object retval = route.getHandler().handle(new Request(ex), new Response(ex));
         if (retval != null) {
+          String data = String.valueOf(retval);
+          int length = data.getBytes().length;
+          if (length < MTU) {
+            ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, length);//workaround, for some reason undertow doesn't always set this
+          }
           ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
-          ex.getResponseSender().send(String.valueOf(retval), new NoCompletionCallback());
+          ex.getResponseSender().send(data, new NoCompletionCallback());
         }
       }
     };
