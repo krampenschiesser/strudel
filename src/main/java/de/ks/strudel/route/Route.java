@@ -27,6 +27,7 @@ public class Route {
   private final HttpMethod method;
   private final String path;
   private final boolean gzip;
+  private final boolean async;
   private final FilterType filterType;
 
   public Route(RouteBuilder routeBuilder) {
@@ -35,6 +36,7 @@ public class Route {
     path = routeBuilder.path;
     gzip = routeBuilder.gzip;
     filterType = routeBuilder.filterType;
+    async = routeBuilder.async;
   }
 
   public Handler getHandler() {
@@ -51,6 +53,10 @@ public class Route {
 
   public boolean isGzip() {
     return gzip;
+  }
+
+  public boolean isAsync() {
+    return async;
   }
 
   public boolean isFilter() {

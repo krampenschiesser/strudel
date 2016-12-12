@@ -24,6 +24,7 @@ public class RouteBuilder {
   HttpMethod method;
   boolean gzip;
   FilterType filterType;
+  boolean async;
 
   public RouteBuilder path(String path) {
     this.path = path;
@@ -57,10 +58,12 @@ public class RouteBuilder {
   }
 
   public RouteBuilder async() {
+    this.async = true;
     return this;
   }
 
   public RouteBuilder sync() {
+    this.async = false;
     return this;
   }
 
@@ -75,6 +78,9 @@ public class RouteBuilder {
   }
 
   public Route build() {
+    if (filterType == FilterType.BEFORE && async) {
+      throw new IllegalStateException("Before-filters are not allowed to be asynchronous!");
+    }
     return new Route(this);
   }
 }

@@ -23,6 +23,7 @@ import io.undertow.Handlers;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.EncodingHandler;
@@ -57,6 +58,7 @@ public class Router {
 
     mainHandler = exchange -> {
       try {
+        asyncRoute.set(false);
         try {
           before.handleRequest(exchange);
           if (!exchange.isComplete()) {
@@ -78,12 +80,17 @@ public class Router {
             throw e;
           }
         }
-        after.handleRequest(exchange);
-        if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
-          exchange.setStatusCode(HttpStatus.NOT_FOUND.getValue());
-        }
-        if (!exchange.isComplete()) {
-          exchange.endExchange();
+        if (asyncRoute.get()) {
+          asyncRoute.set(false);
+          return;
+        } else {
+          after.handleRequest(exchange);
+          if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
+            exchange.setStatusCode(HttpStatus.NOT_FOUND.getValue());
+          }
+          if (!exchange.isComplete()) {
+            exchange.endExchange();
+          }
         }
       } catch (HaltException e) {
         exchange.setStatusCode(e.getStatus());
@@ -118,12 +125,22 @@ public class Router {
     route.getMethods().forEach(m -> rh.add(m, route.getPath(), httpHandler));
   }
 
+  final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
+
   private HttpHandler createRouteHandler(Route route) {
-    return ex -> {
-      Object retval = route.getHandler().handle(new Request(ex), new Response(ex));
-      if (retval != null) {
-        ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
-        ex.getResponseSender().send(String.valueOf(retval), new NoCompletionCallback());
+    return new HttpHandler() {
+      @Override
+      public void handleRequest(HttpServerExchange ex) throws Exception {
+        if (route.isAsync() && ex.isInIoThread()) {
+          asyncRoute.set(true);
+          ex.dispatch(this);
+          return;
+        }
+        Object retval = route.getHandler().handle(new Request(ex), new Response(ex));
+        if (retval != null) {
+          ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
+          ex.getResponseSender().send(String.valueOf(retval), new NoCompletionCallback());
+        }
       }
     };
   }

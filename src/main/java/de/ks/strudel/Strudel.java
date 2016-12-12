@@ -47,36 +47,36 @@ public class Strudel {
     return options;
   }
 
-  public void get(String path, Handler handler) {
-    get(path, null, handler);
+  public RouteBuilder get(String path, Handler handler) {
+    return get(path, null, handler);
   }
 
-  public void get(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
-    add(HttpMethod.GET, path, enhancer, handler);
+  public RouteBuilder get(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
+    return add(HttpMethod.GET, path, enhancer, handler);
   }
 
-  public void put(String path, Handler handler) {
-    put(path, null, handler);
+  public RouteBuilder put(String path, Handler handler) {
+    return put(path, null, handler);
   }
 
-  public void put(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
-    add(HttpMethod.PUT, path, enhancer, handler);
+  public RouteBuilder put(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
+    return add(HttpMethod.PUT, path, enhancer, handler);
   }
 
-  public void post(String path, Handler handler) {
-    post(path, null, handler);
+  public RouteBuilder post(String path, Handler handler) {
+    return post(path, null, handler);
   }
 
-  public void post(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
-    add(HttpMethod.POST, path, enhancer, handler);
+  public RouteBuilder post(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
+    return add(HttpMethod.POST, path, enhancer, handler);
   }
 
-  public void delete(String path, Handler handler) {
-    delete(path, null, handler);
+  public RouteBuilder delete(String path, Handler handler) {
+    return delete(path, null, handler);
   }
 
-  public void delete(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
-    add(HttpMethod.DELETE, path, enhancer, handler);
+  public RouteBuilder delete(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
+    return add(HttpMethod.DELETE, path, enhancer, handler);
   }
 
   public RouteBuilder before(Handler handler) {
@@ -101,7 +101,7 @@ public class Strudel {
 
   public RouteBuilder add(HttpMethod method, String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
     checkStopped();
-    RouteBuilder routeBuilder = new RouteBuilder().method(method).path(path).handler(handler).async();
+    RouteBuilder routeBuilder = new RouteBuilder().method(method).path(path).handler(handler);
     if (enhancer != null) {
       enhancer.accept(routeBuilder);
     }
