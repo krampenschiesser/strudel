@@ -1,0 +1,50 @@
+group 'de.ks'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+        // The following is only necessary if you want to use SNAPSHOT releases.
+        // maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    }
+    dependencies {
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-M3'
+    }
+}
+
+apply plugin: 'org.junit.platform.gradle.plugin'
+
+dependencies {
+    compile "io.undertow:undertow-core:$undertow"
+
+    compile "com.google.code.findbugs:jsr305:$jsr305"
+    compile "org.slf4j:slf4j-api:$slf4j"
+
+    compile "com.google.inject:guice:$guice"
+    compile "com.google.inject.extensions:guice-multibindings:$guice"
+    compile 'javax.inject:javax.inject:1'
+
+    runtime "ch.qos.logback:logback-core:$logback"
+    runtime "ch.qos.logback:logback-classic:$logback"
+
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junit"
+    testCompile "org.mockito:mockito-core:$mockito"
+//    testCompile "org.hamcrest:hamcrest-all:$hamcrest"
+    testCompile 'org.assertj:assertj-core:3.6.1'
+
+    testCompile 'io.rest-assured:rest-assured:3.0.1'
+
+
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:$junit"
+//    testRuntime "org.junit.jupiter:junit-jupiter-migration-support:$junit"
+
+}
