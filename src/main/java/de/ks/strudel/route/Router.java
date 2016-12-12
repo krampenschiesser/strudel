@@ -16,6 +16,7 @@
 package de.ks.strudel.route;
 
 import de.ks.strudel.HaltException;
+import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import io.undertow.Handlers;
@@ -29,6 +30,8 @@ import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 import io.undertow.util.Headers;
 
 import javax.inject.Singleton;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public class Router {
@@ -38,6 +41,7 @@ public class Router {
   private final Predicate contentSizeAbove100 = Predicates.maxContentSize(MTU);
   private final RoutingHandler after;
   private final HttpHandler mainHandler;
+  private final ConcurrentHashMap<Class<? extends Exception>, HandlerNoReturn> exceptionMappings = new ConcurrentHashMap<>();
 
   public Router() {
     routing = Handlers.routing();
@@ -53,9 +57,26 @@ public class Router {
 
     mainHandler = exchange -> {
       try {
-        before.handleRequest(exchange);
-        if (!exchange.isComplete()) {
-          routing.handleRequest(exchange);
+        try {
+          before.handleRequest(exchange);
+          if (!exchange.isComplete()) {
+            routing.handleRequest(exchange);
+          }
+        } catch (HaltException e) {
+          throw e;
+        } catch (Exception e) {
+          HandlerNoReturn handler = exceptionMappings.get(e.getClass());
+          if (handler == null) {
+            handler = exceptionMappings.entrySet().stream().filter(entry -> entry.getKey().isAssignableFrom(e.getClass())).map(Map.Entry::getValue).findFirst().orElse(null);
+          }
+          if (handler != null) {
+            handler.handle(new Request(exchange), new Response(exchange));
+            if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
+              exchange.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
+            }
+          } else {
+            throw e;
+          }
         }
         after.handleRequest(exchange);
         if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
@@ -109,5 +130,9 @@ public class Router {
 
   public HttpHandler getHandler() {
     return mainHandler;
+  }
+
+  public void addExceptionHandler(Class<? extends Exception> clazz, HandlerNoReturn handler) {
+    exceptionMappings.put(clazz, handler);
   }
 }

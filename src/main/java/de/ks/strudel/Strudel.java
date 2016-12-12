@@ -95,6 +95,10 @@ public class Strudel {
     return add(HttpMethod.ANY, path, null, handler).filter(FilterType.AFTER);
   }
 
+  public void exception(Class<? extends Exception> clazz, HandlerNoReturn handler) {
+    router.addExceptionHandler(clazz, handler);
+  }
+
   public RouteBuilder add(HttpMethod method, String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
     checkStopped();
     RouteBuilder routeBuilder = new RouteBuilder().method(method).path(path).handler(handler).async();
