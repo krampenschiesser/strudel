@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${title}">Title</title>
+</head>
+<body>
+<b th:if="${if}">true</b>
+<p th:text="${hello}"></p>
+<div th:replace="/WEB-INF/include.html:: include"></div>
+</body>
+</html>

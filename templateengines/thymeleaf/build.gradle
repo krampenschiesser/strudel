@@ -1,0 +1,4 @@
+dependencies {
+    compile 'org.thymeleaf:thymeleaf:3.0.2.RELEASE'
+    compile project(":core")
+}
