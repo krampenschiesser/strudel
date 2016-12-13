@@ -41,8 +41,8 @@ public class Strudel {
     return injector.getInstance(Strudel.class);
   }
 
-  Options options;
-  Router router;
+  final Options options;
+  final Router router;
   private final ServerManager serverManager;
   private final Provider<ClassPathFileHandler> classPathFileHandlerProvider;
   private final Provider<FolderFileHandler> folderFileHandlerProvider;

@@ -15,6 +15,7 @@
  */
 package de.ks.strudel.template;
 
+@FunctionalInterface
 public interface TemplateEngine {
   String render(Object model, String view);
 }

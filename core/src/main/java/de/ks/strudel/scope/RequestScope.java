@@ -36,6 +36,7 @@ public class RequestScope implements Scope {
     values.remove();
   }
 
+  @Override
   public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
     return () -> {
       Map<Key<?>, Object> scopedObjects = getScopedObjectMap(key);

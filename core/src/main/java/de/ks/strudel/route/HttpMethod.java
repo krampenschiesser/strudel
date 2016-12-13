@@ -20,7 +20,7 @@ import io.undertow.util.HttpString;
 public enum HttpMethod {
   GET, PUT, POST, DELETE, ANY;
 
-  private HttpString method;
+  private final HttpString method;
 
   HttpMethod() {
     this.method = new HttpString(name());

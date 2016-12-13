@@ -20,6 +20,7 @@ import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 
 public class ScopeModule extends AbstractModule {
+  @Override
   public void configure() {
     RequestScope requestScope = new RequestScope();
 

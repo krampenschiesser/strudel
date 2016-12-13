@@ -87,7 +87,7 @@ public enum HttpStatus {
   NOT_EXTENDED(510),
   NETWORK_AUTH_REQUIRED(511);
 
-  private int value;
+  private final int value;
 
   HttpStatus(int value) {
     this.value = value;
