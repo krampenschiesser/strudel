@@ -18,11 +18,16 @@ class RequestScopeTest {
   @Test
   void scoping() {
     strudel.get("/bla", ScopedHandler.class);
+    strudel.get("/async", ScopedHandler.class).async();
     strudel.start();
 
     RestAssured.get("/bla").then().assertThat()//
                .statusCode(200)//
                .body(equalTo("/bla"));
+
+    RestAssured.get("/async").then().assertThat()//
+               .statusCode(200)//
+               .body(equalTo("/async"));
   }
 
   public static class ScopedHandler implements Handler {
