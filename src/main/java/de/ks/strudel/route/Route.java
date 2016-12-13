@@ -17,6 +17,7 @@ package de.ks.strudel.route;
 
 import de.ks.strudel.Handler;
 import de.ks.strudel.HandlerNoReturn;
+import de.ks.strudel.template.TemplateEngine;
 import io.undertow.util.HttpString;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ public class Route {
   private final boolean async;
   private final FilterType filterType;
   private final HandlerNoReturn asyncBefore, asyncAfter;
+  private final Class<? extends TemplateEngine> templateEngine;
 
   public Route(RouteBuilder routeBuilder) {
     handler = routeBuilder.handler;
@@ -41,6 +43,7 @@ public class Route {
     async = routeBuilder.async;
     asyncBefore = routeBuilder.asyncBefore;
     asyncAfter = routeBuilder.asyncAfter;
+    templateEngine = routeBuilder.engineClass;
   }
 
   public Handler getHandler() {
@@ -77,6 +80,10 @@ public class Route {
 
   public HandlerNoReturn getAsyncAfter() {
     return asyncAfter;
+  }
+
+  public Class<? extends TemplateEngine> getTemplateEngine() {
+    return templateEngine;
   }
 
   public List<HttpString> getMethods() {

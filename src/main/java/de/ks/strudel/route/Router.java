@@ -15,10 +15,13 @@
  */
 package de.ks.strudel.route;
 
+import com.google.inject.Injector;
 import de.ks.strudel.HaltException;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.template.ModelAndView;
+import de.ks.strudel.template.TemplateEngine;
 import io.undertow.Handlers;
 import io.undertow.attribute.ResponseHeaderAttribute;
 import io.undertow.predicate.Predicate;
@@ -31,6 +34,7 @@ import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 import io.undertow.util.Headers;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,8 +51,12 @@ public class Router {
   private final HttpHandler mainHandler;
   private final ConcurrentHashMap<Class<? extends Exception>, HandlerNoReturn> exceptionMappings = new ConcurrentHashMap<>();
   private final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
+  private final Injector injector;
 
-  public Router() {
+  @Inject
+  public Router(Injector injector) {
+    this.injector = injector;
+
     routing = Handlers.routing();
     before = Handlers.routing();
     after = Handlers.routing();
@@ -149,6 +157,15 @@ public class Router {
         }
         try {
           Object retval = route.getHandler().handle(request, response);
+          if (route.getTemplateEngine() != null) {
+            if (!(retval instanceof ModelAndView)) {
+              throw new IllegalStateException("in template route " + route.getPath() + " a " + ModelAndView.class.getSimpleName() + " needs to be returned");
+            }
+            @SuppressWarnings("unchecked")
+            ModelAndView mav = (ModelAndView) retval;
+            TemplateEngine templateEngine = injector.getInstance(route.getTemplateEngine());
+            retval = templateEngine.render(mav.getModel(), mav.getTemplateName());
+          }
           if (retval != null) {
             String data = String.valueOf(retval);
             int length = data.getBytes().length;

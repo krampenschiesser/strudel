@@ -15,6 +15,20 @@
  */
 package de.ks.strudel.template;
 
-public interface TemplateEngine {
-  String render(Object model, String view);
+public class ModelAndView {
+  private final Object model;
+  private final String templateName;
+
+  public ModelAndView(Object model, String templateName) {
+    this.model = model;
+    this.templateName = templateName;
+  }
+
+  public Object getModel() {
+    return model;
+  }
+
+  public String getTemplateName() {
+    return templateName;
+  }
 }

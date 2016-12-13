@@ -17,6 +17,7 @@ package de.ks.strudel.route;
 
 import de.ks.strudel.Handler;
 import de.ks.strudel.HandlerNoReturn;
+import de.ks.strudel.template.TemplateEngine;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +30,7 @@ public class RouteBuilder {
   FilterType filterType;
   boolean async;
   HandlerNoReturn asyncBefore, asyncAfter;
+  Class<? extends TemplateEngine> engineClass;
 
   public RouteBuilder path(String path) {
     this.path = path;
@@ -89,10 +91,22 @@ public class RouteBuilder {
     return this;
   }
 
+  public RouteBuilder template() {
+    return template(TemplateEngine.class);
+  }
+
+  public RouteBuilder template(Class<? extends TemplateEngine> engineClass) {
+    this.engineClass = engineClass;
+    async();
+    gzip();
+    return this;
+  }
+
   public Route build() {
     if (filterType == FilterType.BEFORE && async) {
       throw new IllegalStateException("Before-filters are not allowed to be asynchronous!");
     }
     return new Route(this);
   }
+
 }
