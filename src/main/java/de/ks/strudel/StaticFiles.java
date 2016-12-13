@@ -15,9 +15,12 @@
  */
 package de.ks.strudel;
 
+import de.ks.strudel.route.RouteBuilder;
+
 public class StaticFiles {
   private final String location;
   private final String url;
+  private RouteBuilder routeBuilder;
 
   public StaticFiles(String location, String url) {
     this.location = location.startsWith("/") ? location.substring(1) : location;
@@ -38,5 +41,14 @@ public class StaticFiles {
 
   public String getUrl() {
     return url;
+  }
+
+  StaticFiles setRouteBuilder(RouteBuilder routeBuilder) {
+    this.routeBuilder = routeBuilder;
+    return this;
+  }
+
+  public RouteBuilder getRouteBuilder() {
+    return routeBuilder;
   }
 }

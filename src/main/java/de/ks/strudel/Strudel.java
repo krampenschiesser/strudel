@@ -25,13 +25,11 @@ import de.ks.strudel.route.RouteBuilder;
 import de.ks.strudel.route.Router;
 import de.ks.strudel.server.ServerManager;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 @Singleton
 public class Strudel {
@@ -56,35 +54,19 @@ public class Strudel {
   }
 
   public RouteBuilder get(String path, Handler handler) {
-    return get(path, null, handler);
-  }
-
-  public RouteBuilder get(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
-    return add(HttpMethod.GET, path, enhancer, handler);
+    return add(HttpMethod.GET, path, handler);
   }
 
   public RouteBuilder put(String path, Handler handler) {
-    return put(path, null, handler);
-  }
-
-  public RouteBuilder put(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
-    return add(HttpMethod.PUT, path, enhancer, handler);
+    return add(HttpMethod.PUT, path, handler);
   }
 
   public RouteBuilder post(String path, Handler handler) {
-    return post(path, null, handler);
-  }
-
-  public RouteBuilder post(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
-    return add(HttpMethod.POST, path, enhancer, handler);
+    return add(HttpMethod.POST, path, handler);
   }
 
   public RouteBuilder delete(String path, Handler handler) {
-    return delete(path, null, handler);
-  }
-
-  public RouteBuilder delete(String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
-    return add(HttpMethod.DELETE, path, enhancer, handler);
+    return add(HttpMethod.DELETE, path, handler);
   }
 
   public RouteBuilder before(Handler handler) {
@@ -96,11 +78,11 @@ public class Strudel {
   }
 
   public RouteBuilder before(String path, Handler handler) {
-    return add(HttpMethod.ANY, path, null, handler).filter(FilterType.BEFORE);
+    return add(HttpMethod.ANY, path, handler).filter(FilterType.BEFORE);
   }
 
   public RouteBuilder after(String path, Handler handler) {
-    return add(HttpMethod.ANY, path, null, handler).filter(FilterType.AFTER);
+    return add(HttpMethod.ANY, path, handler).filter(FilterType.AFTER);
   }
 
   public void exception(Class<? extends Exception> clazz, HandlerNoReturn handler) {
@@ -119,8 +101,8 @@ public class Strudel {
     StaticFiles staticFiles = new StaticFiles(path, url);
     handler.setStaticFileConfig(staticFiles);
     url = enhanceUrl(url);
-    add(HttpMethod.ANY, url, null, handler);
-    return staticFiles;
+    RouteBuilder builder = add(HttpMethod.ANY, url, handler);
+    return staticFiles.setRouteBuilder(builder);
   }
 
   private String enhanceUrl(String url) {
@@ -134,12 +116,9 @@ public class Strudel {
     return url;
   }
 
-  public RouteBuilder add(HttpMethod method, String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {
+  public RouteBuilder add(HttpMethod method, String path, Handler handler) {
     checkStopped();
     RouteBuilder routeBuilder = new RouteBuilder().method(method).path(path).handler(handler);
-    if (enhancer != null) {
-      enhancer.accept(routeBuilder);
-    }
     builders.add(routeBuilder);
     return routeBuilder;
   }

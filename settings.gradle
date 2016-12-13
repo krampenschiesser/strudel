@@ -1,2 +1,9 @@
 rootProject.name = 'strudel'
 
+include "templateengines:freemarker"
+include "templateengines:handlebars"
+include "templateengines:jade"
+include "templateengines:mustache"
+include "templateengines:pebble"
+include "templateengines:thymeleaf"
+include "templateengines:water"
