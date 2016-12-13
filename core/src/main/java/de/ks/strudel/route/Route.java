@@ -23,9 +23,10 @@ import io.undertow.util.HttpString;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class Route {
-  private final Handler handler;
+  private final Supplier<Handler> handler;
   private final HttpMethod method;
   private final String path;
   private final boolean gzip;
@@ -47,7 +48,7 @@ public class Route {
   }
 
   public Handler getHandler() {
-    return handler;
+    return handler.get();
   }
 
   public HttpMethod getMethod() {

@@ -3,11 +3,13 @@ package de.ks.strudel.server;
 import de.ks.strudel.option.Options;
 import de.ks.strudel.route.RouteBuilder;
 import de.ks.strudel.route.Router;
+import de.ks.strudel.scope.RequestScope;
 import io.restassured.RestAssured;
 import io.undertow.Undertow;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -22,8 +24,9 @@ public class ServerManagerTest {
   @BeforeEach
   public void startServer() {
     Options options = new Options().port(0);//any
-    Router router = new Router(null);
-    router.addRoute(new RouteBuilder().get().path("/hello").handler((request, response) -> GREETING).build());
+    RequestScope scope = Mockito.mock(RequestScope.class);
+    Router router = new Router(null, scope);
+    router.addRoute(new RouteBuilder().get().path("/hello").handler(() -> (request, response) -> GREETING).build());
     serverManager = new ServerManager(options, router);
     serverManager.start();
     RestAssured.port = getRunningPort(serverManager.getUndertow());

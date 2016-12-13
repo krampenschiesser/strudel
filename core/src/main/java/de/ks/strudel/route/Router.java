@@ -20,6 +20,7 @@ import de.ks.strudel.HaltException;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.scope.RequestScope;
 import de.ks.strudel.template.ModelAndView;
 import de.ks.strudel.template.TemplateEngine;
 import io.undertow.Handlers;
@@ -52,10 +53,12 @@ public class Router {
   private final ConcurrentHashMap<Class<? extends Exception>, HandlerNoReturn> exceptionMappings = new ConcurrentHashMap<>();
   private final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
   private final Injector injector;
+  private final RequestScope requestScope;
 
   @Inject
-  public Router(Injector injector) {
+  public Router(Injector injector, RequestScope requestScope) {
     this.injector = injector;
+    this.requestScope = requestScope;
 
     routing = Handlers.routing();
     before = Handlers.routing();
@@ -150,35 +153,40 @@ public class Router {
         }
         Request request = new Request(ex);
         Response response = new Response(ex);
-        HandlerNoReturn asyncBefore = route.getAsyncBefore();
-        HandlerNoReturn asyncAfter = route.getAsyncAfter();
-        if (asyncBefore != null) {
-          asyncBefore.handle(request, response);
-        }
+        requestScope.enter(request, response);
         try {
-          Object retval = route.getHandler().handle(request, response);
-          if (route.getTemplateEngine() != null) {
-            if (!(retval instanceof ModelAndView)) {
-              throw new IllegalStateException("in template route " + route.getPath() + " a " + ModelAndView.class.getSimpleName() + " needs to be returned");
-            }
-            @SuppressWarnings("unchecked")
-            ModelAndView mav = (ModelAndView) retval;
-            TemplateEngine templateEngine = injector.getInstance(route.getTemplateEngine());
-            retval = templateEngine.render(mav.getModel(), mav.getTemplateName());
+          HandlerNoReturn asyncBefore = route.getAsyncBefore();
+          HandlerNoReturn asyncAfter = route.getAsyncAfter();
+          if (asyncBefore != null) {
+            asyncBefore.handle(request, response);
           }
-          if (retval != null) {
-            String data = String.valueOf(retval);
-            int length = data.getBytes().length;
-            if (length < MTU) {
-              ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, length);//workaround, for some reason undertow doesn't always set this
+          try {
+            Object retval = route.getHandler().handle(request, response);
+            if (route.getTemplateEngine() != null) {
+              if (!(retval instanceof ModelAndView)) {
+                throw new IllegalStateException("in template route " + route.getPath() + " a " + ModelAndView.class.getSimpleName() + " needs to be returned");
+              }
+              @SuppressWarnings("unchecked")
+              ModelAndView mav = (ModelAndView) retval;
+              TemplateEngine templateEngine = injector.getInstance(route.getTemplateEngine());
+              retval = templateEngine.render(mav.getModel(), mav.getTemplateName());
             }
-            ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
-            ex.getResponseSender().send(data, new NoCompletionCallback());
+            if (retval != null) {
+              String data = String.valueOf(retval);
+              int length = data.getBytes().length;
+              if (length < MTU) {
+                ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, length);//workaround, for some reason undertow doesn't always set this
+              }
+              ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
+              ex.getResponseSender().send(data, new NoCompletionCallback());
+            }
+          } finally {
+            if (asyncAfter != null) {
+              asyncAfter.handle(request, response);
+            }
           }
         } finally {
-          if (asyncAfter != null) {
-            asyncAfter.handle(request, response);
-          }
+          requestScope.exit();
         }
       }
     };

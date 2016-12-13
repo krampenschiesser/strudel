@@ -20,11 +20,12 @@ import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.template.TemplateEngine;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 public class RouteBuilder {
 
   String path;
-  Handler handler;
+  Supplier<Handler> handler;
   HttpMethod method;
   boolean gzip;
   FilterType filterType;
@@ -37,7 +38,7 @@ public class RouteBuilder {
     return this;
   }
 
-  public RouteBuilder handler(Handler handler) {
+  public RouteBuilder handler(Supplier<Handler> handler) {
     this.handler = handler;
     return this;
   }

@@ -45,7 +45,7 @@ public class SimpleRouteTest {
 
   private void testHttpRoute(HttpMethod m) {
     String path = "/" + m.name();
-    strudel.add(m, path, (request, response) -> MSG_PREFIX + m.name());
+    strudel.add(m, path, () -> (request, response) -> MSG_PREFIX + m.name());
     strudel.start();
     String body = RestAssured.request(m.name(), path).getBody().asString();
     assertEquals(MSG_PREFIX + m.name(), body);
