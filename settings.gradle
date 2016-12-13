@@ -1,5 +1,4 @@
-rootProject.name = 'strudel'
-
+include "core"
 include "templateengines:freemarker"
 include "templateengines:handlebars"
 include "templateengines:jade"

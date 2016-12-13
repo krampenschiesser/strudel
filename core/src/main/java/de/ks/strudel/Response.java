@@ -20,7 +20,11 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 
 public class Response {
-  protected HttpServerExchange exchange;
+  protected final HttpServerExchange exchange;
+
+  protected Response() {
+    exchange = null;
+  }
 
   public Response(HttpServerExchange exchange) {
     this.exchange = exchange;

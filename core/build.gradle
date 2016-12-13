@@ -1,0 +1,13 @@
+dependencies {
+    compile "io.undertow:undertow-core:$undertow"
+
+    compile "com.google.code.findbugs:jsr305:$jsr305"
+    compile "org.slf4j:slf4j-api:$slf4j"
+
+    compile "com.google.inject:guice:$guice"
+    compile "com.google.inject.extensions:guice-multibindings:$guice"
+    compile 'javax.inject:javax.inject:1'
+
+    runtime "ch.qos.logback:logback-core:$logback"
+    runtime "ch.qos.logback:logback-classic:$logback"
+}

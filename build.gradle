@@ -1,14 +1,3 @@
-group 'de.ks'
-version '0.1-SNAPSHOT'
-
-apply plugin: 'java'
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-    mavenLocal()
-}
 
 buildscript {
     repositories {
@@ -21,30 +10,27 @@ buildscript {
     }
 }
 
-apply plugin: 'org.junit.platform.gradle.plugin'
+allprojects {
+    group 'de.ks'
+    version '0.1-SNAPSHOT'
 
-dependencies {
-    compile "io.undertow:undertow-core:$undertow"
+    apply plugin: 'java'
 
-    compile "com.google.code.findbugs:jsr305:$jsr305"
-    compile "org.slf4j:slf4j-api:$slf4j"
+    sourceCompatibility = 1.8
 
-    compile "com.google.inject:guice:$guice"
-    compile "com.google.inject.extensions:guice-multibindings:$guice"
-    compile 'javax.inject:javax.inject:1'
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
 
-    runtime "ch.qos.logback:logback-core:$logback"
-    runtime "ch.qos.logback:logback-classic:$logback"
+    apply plugin: 'org.junit.platform.gradle.plugin'
 
-    testCompile "org.junit.jupiter:junit-jupiter-api:$junit"
-    testCompile "org.mockito:mockito-core:$mockito"
-//    testCompile "org.hamcrest:hamcrest-all:$hamcrest"
-    testCompile 'org.assertj:assertj-core:3.6.1'
+    dependencies {
+        testCompile "org.junit.jupiter:junit-jupiter-api:$junit"
+        testCompile "org.mockito:mockito-core:$mockito"
+        testCompile 'org.assertj:assertj-core:3.6.1'
+        testCompile 'io.rest-assured:rest-assured:3.0.1'
 
-    testCompile 'io.rest-assured:rest-assured:3.0.1'
-
-
-    testRuntime "org.junit.jupiter:junit-jupiter-engine:$junit"
-//    testRuntime "org.junit.jupiter:junit-jupiter-migration-support:$junit"
-
+        testRuntime "org.junit.jupiter:junit-jupiter-engine:$junit"
+    }
 }

@@ -15,6 +15,8 @@
  */
 package de.ks.strudel;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import de.ks.strudel.handler.ClassPathFileHandler;
 import de.ks.strudel.handler.FolderFileHandler;
 import de.ks.strudel.handler.StaticFileHandler;
@@ -33,6 +35,11 @@ import java.util.List;
 
 @Singleton
 public class Strudel {
+  public static Strudel create() {
+    Injector injector = Guice.createInjector(new StrudelModule());
+    return injector.getInstance(Strudel.class);
+  }
+
   Options options;
   Router router;
   private final ServerManager serverManager;
@@ -142,4 +149,5 @@ public class Strudel {
       throw new IllegalStateException("Configuring routes is only allowed when stopped");
     }
   }
+
 }

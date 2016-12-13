@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel;
+package de.ks.strudel.scope;
 
 import com.google.inject.AbstractModule;
+import de.ks.strudel.Request;
+import de.ks.strudel.Response;
 
-public class StrudelModule extends AbstractModule {
-  @Override
-  protected void configure() {
+public class ScopeModule extends AbstractModule {
+  public void configure() {
+    RequestScope requestScope = new RequestScope();
 
+    bindScope(RequestScoped.class, requestScope);
+    bind(RequestScope.class).toInstance(requestScope);
+    bind(Request.class).in(requestScope);
+    bind(Response.class).in(requestScope);
+//    bind(HttpServerExchange.class).in(requestScope);
   }
 }

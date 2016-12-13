@@ -21,7 +21,11 @@ import io.undertow.util.PathTemplateMatch;
 import java.util.Map;
 
 public class Request {
-  protected HttpServerExchange exchange;
+  protected final HttpServerExchange exchange;
+
+  protected Request() {
+    exchange = null;
+  }
 
   public Request(HttpServerExchange exchange) {
     this.exchange = exchange;
