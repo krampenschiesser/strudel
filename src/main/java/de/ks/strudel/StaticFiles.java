@@ -13,35 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.option;
+package de.ks.strudel;
 
-import javax.inject.Singleton;
+public class StaticFiles {
+  private final String location;
+  private final String url;
 
-@Singleton
-public class Options {
-  private int port = 4567;
-  private String host = "0.0.0.0";
-
-
-  public String host() {
-    return host;
+  public StaticFiles(String location, String url) {
+    this.location = location.startsWith("/") ? location.substring(1) : location;
+    this.url = url;
   }
 
-  public Options host(String host) {
-    this.host = host;
+  public StaticFiles cached() {
     return this;
   }
 
-  public Options port(int port) {
-    this.port = port;
+  public StaticFiles header(String key, String value) {
     return this;
   }
 
-  public int port() {
-    return port;
+  public String getLocation() {
+    return location;
   }
 
-  public Options secure(String keystoreFile, String keystorePassword, String truststoreFile, String truststorePassword) {
-    return this;
+  public String getUrl() {
+    return url;
   }
 }

@@ -27,6 +27,10 @@ public class Request {
     this.exchange = exchange;
   }
 
+  public HttpServerExchange getExchange() {
+    return exchange;
+  }
+
   public String routeParameter(String key) {
     PathTemplateMatch attachment = exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY);
     Map<String, String> parameters = attachment.getParameters();
@@ -37,5 +41,9 @@ public class Request {
     PathTemplateMatch attachment = exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY);
     Map<String, String> parameters = attachment.getParameters();
     return parameters.get("*");
+  }
+
+  public String path() {
+    return exchange.getRequestPath();
   }
 }

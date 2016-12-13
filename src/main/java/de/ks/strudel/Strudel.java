@@ -15,6 +15,9 @@
  */
 package de.ks.strudel;
 
+import de.ks.strudel.handler.ClassPathFileHandler;
+import de.ks.strudel.handler.FolderFileHandler;
+import de.ks.strudel.handler.StaticFileHandler;
 import de.ks.strudel.option.Options;
 import de.ks.strudel.route.FilterType;
 import de.ks.strudel.route.HttpMethod;
@@ -24,6 +27,7 @@ import de.ks.strudel.server.ServerManager;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +38,17 @@ public class Strudel {
   Options options;
   Router router;
   private final ServerManager serverManager;
+  private final Provider<ClassPathFileHandler> classPathFileHandlerProvider;
+  private final Provider<FolderFileHandler> folderFileHandlerProvider;
   private final List<RouteBuilder> builders = new ArrayList<>();
 
   @Inject
-  public Strudel(Options options, Router router, ServerManager serverManager) {
+  public Strudel(Options options, Router router, ServerManager serverManager, Provider<ClassPathFileHandler> classPathFileHandlerProvider, Provider<FolderFileHandler> folderFileHandlerProvider) {
     this.options = options;
     this.router = router;
     this.serverManager = serverManager;
+    this.classPathFileHandlerProvider = classPathFileHandlerProvider;
+    this.folderFileHandlerProvider = folderFileHandlerProvider;
   }
 
   public Options options() {
@@ -97,6 +105,33 @@ public class Strudel {
 
   public void exception(Class<? extends Exception> clazz, HandlerNoReturn handler) {
     router.addExceptionHandler(clazz, handler);
+  }
+
+  public StaticFiles classpathLocation(String classPathLocation, String url) {
+    return addStaticFiles(classPathLocation, url, classPathFileHandlerProvider.get());
+  }
+
+  public StaticFiles externalLocation(String externalFolder, String url) {
+    return addStaticFiles(externalFolder, url, folderFileHandlerProvider.get());
+  }
+
+  private StaticFiles addStaticFiles(String path, String url, StaticFileHandler handler) {
+    StaticFiles staticFiles = new StaticFiles(path, url);
+    handler.setStaticFileConfig(staticFiles);
+    url = enhanceUrl(url);
+    add(HttpMethod.ANY, url, null, handler);
+    return staticFiles;
+  }
+
+  private String enhanceUrl(String url) {
+    if (!url.endsWith("*/")) {
+      if (url.endsWith("/")) {
+        url += "*";
+      } else {
+        url += "/*";
+      }
+    }
+    return url;
   }
 
   public RouteBuilder add(HttpMethod method, String path, @Nullable Consumer<RouteBuilder> enhancer, Handler handler) {

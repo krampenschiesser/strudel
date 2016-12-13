@@ -13,35 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.option;
+package de.ks.strudel.handler;
 
-import javax.inject.Singleton;
+import de.ks.strudel.StaticFiles;
+import io.undertow.server.handlers.resource.PathResourceManager;
+import io.undertow.server.handlers.resource.ResourceManager;
 
-@Singleton
-public class Options {
-  private int port = 4567;
-  private String host = "0.0.0.0";
+import java.nio.file.Paths;
 
-
-  public String host() {
-    return host;
-  }
-
-  public Options host(String host) {
-    this.host = host;
-    return this;
-  }
-
-  public Options port(int port) {
-    this.port = port;
-    return this;
-  }
-
-  public int port() {
-    return port;
-  }
-
-  public Options secure(String keystoreFile, String keystorePassword, String truststoreFile, String truststorePassword) {
-    return this;
+public class FolderFileHandler extends StaticFileHandler {
+  @Override
+  protected ResourceManager createResourceManager(StaticFiles staticFiles) {
+    return new PathResourceManager(Paths.get(staticFiles.getLocation()), 0L);
   }
 }

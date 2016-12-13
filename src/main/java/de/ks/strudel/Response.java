@@ -26,6 +26,10 @@ public class Response {
     this.exchange = exchange;
   }
 
+  public HttpServerExchange getExchange() {
+    return exchange;
+  }
+
   public Response status(HttpStatus status) {
     return status(status.getValue());
   }

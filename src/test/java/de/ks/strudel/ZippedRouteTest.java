@@ -35,7 +35,7 @@ public class ZippedRouteTest {
   void zipRoute() {
     IntStream range = IntStream.range(0, 500000);
     String text = range.mapToObj(String::valueOf).collect(Collectors.joining());
-    strudel.get("/zip", (request, response) -> text).gzip(true);
+    strudel.get("/zip", (request, response) -> text).gzip();
     strudel.start();
 
     io.restassured.response.Response response = RestAssured.get("/zip");
@@ -45,7 +45,7 @@ public class ZippedRouteTest {
 
   @Test
   void noZipForSmallData() {
-    strudel.get("/zip", (request, response) -> "hallo").gzip(true);
+    strudel.get("/zip", (request, response) -> "hallo").gzip();
     strudel.start();
 
     io.restassured.response.Response response = RestAssured.get("/zip");

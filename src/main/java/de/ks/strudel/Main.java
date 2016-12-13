@@ -26,17 +26,17 @@ public class Main {
     Injector injector = Guice.createInjector(new StrudelModule());
     Strudel strudel = injector.getInstance(Strudel.class);
 
-    strudel.get("/long", rb -> rb.gzip(true), (req, resp) -> {
+    strudel.get("/long", rb -> rb.gzip(), (req, resp) -> {
       String bla = "";
       for (int i = 0; i < 1000; i++) {
         bla += "Hello world\n";
       }
       return bla;
     });
-    strudel.get("/short", rb -> rb.gzip(true), (req, resp) -> "Hello world\n");
+    strudel.get("/short", rb -> rb.gzip(), (req, resp) -> "Hello world\n");
     IntStream range = IntStream.range(0, 500000);
     String text = range.mapToObj(String::valueOf).collect(Collectors.joining());
-    strudel.get("/zip", (request, response) -> text).gzip(true);
+    strudel.get("/zip", (request, response) -> text).gzip();
     strudel.get("/hello", (req, resp) -> "Hello world!");
     strudel.get("/", (req, resp) -> "Hello Sauerland!");
 

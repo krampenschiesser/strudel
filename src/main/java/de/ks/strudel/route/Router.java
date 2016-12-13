@@ -89,10 +89,12 @@ public class Router {
           return;
         } else {
           after.handleRequest(exchange);
-          if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
+
+          boolean inProgress = (exchange.isResponseStarted() || exchange.isDispatched());
+          if (!inProgress && exchange.getStatusCode() == 200) {
             exchange.setStatusCode(HttpStatus.NOT_FOUND.getValue());
           }
-          if (!exchange.isComplete()) {
+          if (!exchange.isComplete() && !inProgress) {
             exchange.endExchange();
           }
         }
@@ -138,15 +140,28 @@ public class Router {
           ex.dispatch(this);
           return;
         }
-        Object retval = route.getHandler().handle(new Request(ex), new Response(ex));
-        if (retval != null) {
-          String data = String.valueOf(retval);
-          int length = data.getBytes().length;
-          if (length < MTU) {
-            ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, length);//workaround, for some reason undertow doesn't always set this
+        Request request = new Request(ex);
+        Response response = new Response(ex);
+        HandlerNoReturn asyncBefore = route.getAsyncBefore();
+        HandlerNoReturn asyncAfter = route.getAsyncAfter();
+        if (asyncBefore != null) {
+          asyncBefore.handle(request, response);
+        }
+        try {
+          Object retval = route.getHandler().handle(request, response);
+          if (retval != null) {
+            String data = String.valueOf(retval);
+            int length = data.getBytes().length;
+            if (length < MTU) {
+              ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, length);//workaround, for some reason undertow doesn't always set this
+            }
+            ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
+            ex.getResponseSender().send(data, new NoCompletionCallback());
           }
-          ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
-          ex.getResponseSender().send(data, new NoCompletionCallback());
+        } finally {
+          if (asyncAfter != null) {
+            asyncAfter.handle(request, response);
+          }
         }
       }
     };

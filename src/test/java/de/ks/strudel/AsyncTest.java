@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -74,5 +75,17 @@ public class AsyncTest {
       });
       assertEquals("test", future.get().body().asString());
     }
+  }
+
+  @Test
+  void asyncBeforeAfter() {
+    AtomicInteger count = new AtomicInteger();
+    strudel.get("/", (request, response) -> {
+      return "test";
+    }).async((request, response) -> count.incrementAndGet(), (request, response) -> count.incrementAndGet());
+    strudel.start();
+    io.restassured.response.Response response = RestAssured.get("/");
+    assertEquals("test", response.body().asString());
+    assertEquals(2, count.get(), "Callbacks have not been executed!");
   }
 }

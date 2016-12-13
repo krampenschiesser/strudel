@@ -16,6 +16,9 @@
 package de.ks.strudel.route;
 
 import de.ks.strudel.Handler;
+import de.ks.strudel.HandlerNoReturn;
+
+import javax.annotation.Nullable;
 
 public class RouteBuilder {
 
@@ -25,6 +28,7 @@ public class RouteBuilder {
   boolean gzip;
   FilterType filterType;
   boolean async;
+  HandlerNoReturn asyncBefore, asyncAfter;
 
   public RouteBuilder path(String path) {
     this.path = path;
@@ -58,17 +62,25 @@ public class RouteBuilder {
   }
 
   public RouteBuilder async() {
+    return async(null, null);
+  }
+
+  public RouteBuilder async(@Nullable HandlerNoReturn before, @Nullable HandlerNoReturn after) {
     this.async = true;
+    this.asyncBefore = before;
+    this.asyncAfter = after;
     return this;
   }
 
   public RouteBuilder sync() {
     this.async = false;
+    asyncAfter = null;
+    asyncBefore = null;
     return this;
   }
 
-  public RouteBuilder gzip(boolean enable) {
-    this.gzip = enable;
+  public RouteBuilder gzip() {
+    this.gzip = true;
     return this;
   }
 

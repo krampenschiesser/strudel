@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.option;
+package de.ks.strudel.handler;
 
-public class StaticFiles {
-  public StaticFiles cached() {
-    return this;
-  }
+import de.ks.strudel.StaticFiles;
+import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import io.undertow.server.handlers.resource.ResourceManager;
 
-  public StaticFiles header(String key, String value) {
-    return this;
+public class ClassPathFileHandler extends StaticFileHandler {
+  @Override
+  protected ResourceManager createResourceManager(StaticFiles staticFiles) {
+    return new ClassPathResourceManager(getClass().getClassLoader(), staticFiles.getLocation());
   }
 }
