@@ -71,14 +71,23 @@ public class Strudel {
     return add(HttpMethod.GET, path, () -> handler);
   }
 
+  public RouteBuilder put(String path, Class<? extends Handler> handler) {
+    return add(HttpMethod.PUT, path, () -> injector.getInstance(handler));
+  }
   public RouteBuilder put(String path, Handler handler) {
     return add(HttpMethod.PUT, path, () -> handler);
   }
 
+  public RouteBuilder post(String path, Class<? extends Handler> handler) {
+    return add(HttpMethod.POST, path, () -> injector.getInstance(handler));
+  }
   public RouteBuilder post(String path, Handler handler) {
     return add(HttpMethod.POST, path, () -> handler);
   }
 
+  public RouteBuilder delete(String path, Class<? extends Handler> handler) {
+    return add(HttpMethod.DELETE, path, () -> injector.getInstance(handler));
+  }
   public RouteBuilder delete(String path, Handler handler) {
     return add(HttpMethod.DELETE, path, () -> handler);
   }
@@ -99,6 +108,25 @@ public class Strudel {
     return add(HttpMethod.ANY, path, () -> handler).filter(FilterType.AFTER);
   }
 
+  public RouteBuilder before(Class<? extends Handler> handler) {
+    return before("/*", handler);
+  }
+
+  public RouteBuilder after(Class<? extends Handler> handler) {
+    return after("/*", handler);
+  }
+
+  public RouteBuilder before(String path, Class<? extends Handler> handler) {
+    return add(HttpMethod.ANY, path, () -> injector.getInstance(handler)).filter(FilterType.BEFORE);
+  }
+
+  public RouteBuilder after(String path, Class<? extends Handler> handler) {
+    return add(HttpMethod.ANY, path, () -> injector.getInstance(handler)).filter(FilterType.AFTER);
+  }
+
+  public void exception(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {
+    router.addExceptionHandler(clazz, handler);
+  }
   public void exception(Class<? extends Exception> clazz, HandlerNoReturn handler) {
     router.addExceptionHandler(clazz, handler);
   }

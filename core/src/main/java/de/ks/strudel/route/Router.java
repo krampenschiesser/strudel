@@ -38,7 +38,9 @@ import io.undertow.util.Headers;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 @Singleton
 public class Router {
@@ -50,7 +52,7 @@ public class Router {
     Predicates.maxContentSize(MTU));
   private final RoutingHandler after;
   private final HttpHandler mainHandler;
-  private final ConcurrentHashMap<Class<? extends Exception>, HandlerNoReturn> exceptionMappings = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings = new ConcurrentHashMap<>();
   private final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
   private final Injector injector;
   private final RequestScope requestScope;
@@ -82,9 +84,12 @@ public class Router {
         } catch (HaltException e) {
           throw e;
         } catch (Exception e) {
-          HandlerNoReturn handler = exceptionMappings.get(e.getClass());
+          HandlerNoReturn handler = Optional.ofNullable(exceptionMappings.get(e.getClass())).map(Supplier::get).orElse(null);
           if (handler == null) {
-            handler = exceptionMappings.entrySet().stream().filter(entry -> entry.getKey().isAssignableFrom(e.getClass())).map(Map.Entry::getValue).findFirst().orElse(null);
+            handler = exceptionMappings.entrySet().stream()//
+                                       .filter(entry -> entry.getKey().isAssignableFrom(e.getClass()))//
+                                       .map(Map.Entry::getValue).map(Supplier::get)//
+                                       .findFirst().orElse(null);
           }
           if (handler != null) {
             handler.handle(new Request(exchange), new Response(exchange));
@@ -196,7 +201,11 @@ public class Router {
     return mainHandler;
   }
 
+  public void addExceptionHandler(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {
+    exceptionMappings.put(clazz, () -> injector.getInstance(handler));
+  }
+
   public void addExceptionHandler(Class<? extends Exception> clazz, HandlerNoReturn handler) {
-    exceptionMappings.put(clazz, handler);
+    exceptionMappings.put(clazz, () -> handler);
   }
 }
