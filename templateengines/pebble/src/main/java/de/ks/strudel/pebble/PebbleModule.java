@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.freemarker;
+package de.ks.strudel.pebble;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import freemarker.cache.ClassTemplateLoader;
-import freemarker.template.Configuration;
+import com.mitchellbosecke.pebble.PebbleEngine;
+import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 
-public class FreemarkerModule extends AbstractModule {
-  private final String classpathPrefix;
+public class PebbleModule extends AbstractModule {
+  private final String classPathPrefix;
 
-  public FreemarkerModule() {
-    this("/WEB-INF/public");
+  public PebbleModule() {
+    this("WEB-INF/public");
   }
 
-  public FreemarkerModule(String classpathPrefix) {
-    this.classpathPrefix = classpathPrefix;
+  public PebbleModule(String classPathPrefix) {
+    this.classPathPrefix = classPathPrefix;
   }
-
 
   @Override
   protected void configure() {
@@ -38,9 +37,12 @@ public class FreemarkerModule extends AbstractModule {
   }
 
   @Provides
-  public Configuration getConfiguration() {
-    Configuration configuration = new Configuration(Configuration.VERSION_2_3_25);
-    configuration.setTemplateLoader(new ClassTemplateLoader(getClass(), classpathPrefix));
-    return configuration;
+  public com.mitchellbosecke.pebble.PebbleEngine getEngine() {
+    ClasspathLoader loader = new ClasspathLoader(getClass().getClassLoader());
+    loader.setPrefix(classPathPrefix);
+
+    PebbleEngine.Builder builder = new PebbleEngine.Builder();
+    return builder.loader(loader)//
+                  .build();
   }
 }

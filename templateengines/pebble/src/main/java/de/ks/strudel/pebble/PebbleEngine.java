@@ -13,34 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.freemarker;
+package de.ks.strudel.pebble;
 
+import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import de.ks.strudel.template.TemplateEngine;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.io.StringWriter;
 import java.util.Locale;
+import java.util.Map;
 
 @Singleton
-public class FreemarkerEngine implements TemplateEngine {
-  private final Configuration configuration;
+public class PebbleEngine implements TemplateEngine {
+
+  private final com.mitchellbosecke.pebble.PebbleEngine engine;
   private final Provider<Locale> localeProvider;
 
   @Inject
-  public FreemarkerEngine(Provider<Locale> localeProvider, Configuration configuration) {
+  public PebbleEngine(Provider<Locale> localeProvider, com.mitchellbosecke.pebble.PebbleEngine engine) {
     this.localeProvider = localeProvider;
-    this.configuration = configuration;
+    this.engine = engine;
   }
 
   @Override
   public String render(Object model, String view) throws Exception {
-    Template template = configuration.getTemplate(view, localeProvider.get());
-    StringWriter out = new StringWriter();
-    template.process(model, out);
-    return out.toString();
+    @SuppressWarnings("unchecked")
+    Map<String, Object> data = (Map<String, Object>) model;
+    PebbleTemplate compiledTemplate = engine.getTemplate(view);
+    StringWriter writer = new StringWriter();
+    compiledTemplate.evaluate(writer, data, localeProvider.get());
+    return writer.toString();
   }
 }

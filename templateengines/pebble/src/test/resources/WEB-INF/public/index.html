@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+</head>
+<body>
+{% if condition %}
+<b>true</b>
+{% endif %}
+<p>{{ hello }}</p>
+{% include "include.html" %}
+
+<h1>{{ i18n("WEB-INF/public/index","key") }}</h1>
+</body>
+</html>
