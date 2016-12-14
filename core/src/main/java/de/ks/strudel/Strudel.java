@@ -22,11 +22,9 @@ import de.ks.strudel.handler.ClassPathFileHandler;
 import de.ks.strudel.handler.FolderFileHandler;
 import de.ks.strudel.handler.StaticFileHandler;
 import de.ks.strudel.option.Options;
-import de.ks.strudel.route.FilterType;
-import de.ks.strudel.route.HttpMethod;
-import de.ks.strudel.route.RouteBuilder;
-import de.ks.strudel.route.Router;
+import de.ks.strudel.route.*;
 import de.ks.strudel.server.ServerManager;
+import io.undertow.websockets.WebSocketConnectionCallback;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -140,20 +138,27 @@ public class Strudel {
     router.addExceptionHandler(clazz, handler);
   }
 
-  public StaticFiles classpathLocation(String classPathLocation, String url) {
-    return addStaticFiles(classPathLocation, url, classPathFileHandlerProvider.get());
+  public StaticFiles classpathLocation(String classPathLocation, String path) {
+    return addStaticFiles(classPathLocation, path, classPathFileHandlerProvider.get());
   }
 
-  public StaticFiles externalLocation(String externalFolder, String url) {
-    return addStaticFiles(externalFolder, url, folderFileHandlerProvider.get());
+  public StaticFiles externalLocation(String externalFolder, String path) {
+    return addStaticFiles(externalFolder, path, folderFileHandlerProvider.get());
   }
 
   public void webjars() {
     webjars("/webjars");
   }
 
-  public void webjars(String url) {
-    classpathLocation("META-INF/resources/webjars/", url).getRouteBuilder().gzip();
+  public void webjars(String path) {
+    classpathLocation("META-INF/resources/webjars/", path).getRouteBuilder().gzip();
+  }
+
+  public void websocket(String path, WebSocketConnectionCallback webSocketConnectionCallback) {
+    checkStopped();
+    RouteBuilder builder = new RouteBuilder().method(HttpMethod.GET).path(path);
+    new BuilderFriend(builder).websocket(webSocketConnectionCallback);
+    builders.add(builder);
   }
 
   private StaticFiles addStaticFiles(String path, String url, StaticFileHandler handler) {

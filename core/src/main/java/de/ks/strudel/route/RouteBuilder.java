@@ -18,6 +18,7 @@ package de.ks.strudel.route;
 import de.ks.strudel.Handler;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.template.TemplateEngine;
+import io.undertow.websockets.WebSocketConnectionCallback;
 
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
@@ -32,6 +33,7 @@ public class RouteBuilder {
   boolean async;
   HandlerNoReturn asyncBefore, asyncAfter;
   Class<? extends TemplateEngine> engineClass;
+  WebSocketConnectionCallback webSocketConnectionCallback;
 
   public RouteBuilder path(String path) {
     this.path = path;
@@ -110,4 +112,8 @@ public class RouteBuilder {
     return new Route(this);
   }
 
+  RouteBuilder websocket(WebSocketConnectionCallback webSocketConnectionCallback) {
+    this.webSocketConnectionCallback = webSocketConnectionCallback;
+    return this;
+  }
 }

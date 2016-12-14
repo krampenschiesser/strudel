@@ -89,6 +89,8 @@ public class Router {
 
     if (route.isGzip()) {
       httpHandler = wrapInGzipHandler(createRouteHandler(route));
+    } else if (route.isWebsocket()) {
+      httpHandler = Handlers.websocket(route.getWebSocketConnectionCallback());
     } else {
       httpHandler = createRouteHandler(route);
     }
@@ -117,5 +119,4 @@ public class Router {
   public HttpHandler getHandler() {
     return mainHandler;
   }
-
 }

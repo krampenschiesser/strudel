@@ -19,6 +19,7 @@ import de.ks.strudel.Handler;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.template.TemplateEngine;
 import io.undertow.util.HttpString;
+import io.undertow.websockets.WebSocketConnectionCallback;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,6 +35,7 @@ public class Route {
   private final FilterType filterType;
   private final HandlerNoReturn asyncBefore, asyncAfter;
   private final Class<? extends TemplateEngine> templateEngine;
+  private WebSocketConnectionCallback webSocketConnectionCallback;
 
   public Route(RouteBuilder routeBuilder) {
     handler = routeBuilder.handler;
@@ -45,6 +47,7 @@ public class Route {
     asyncBefore = routeBuilder.asyncBefore;
     asyncAfter = routeBuilder.asyncAfter;
     templateEngine = routeBuilder.engineClass;
+    webSocketConnectionCallback = routeBuilder.webSocketConnectionCallback;
   }
 
   public Handler getHandler() {
@@ -98,5 +101,13 @@ public class Route {
     } else {
       return Collections.singletonList(method.getMethod());
     }
+  }
+
+  public boolean isWebsocket() {
+    return webSocketConnectionCallback != null;
+  }
+
+  public WebSocketConnectionCallback getWebSocketConnectionCallback() {
+    return webSocketConnectionCallback;
   }
 }
