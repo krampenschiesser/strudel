@@ -47,6 +47,12 @@ class ThymeleafEngineTest {
             .body("html.head.title", equalTo("myTitle"))//
             .body("html.body.p", equalTo("Hello Sauerland"))//
             .body("html.body.b", equalTo("true"))//
+            .body("html.body.h1", equalTo("Default"))
             .body("html.body.div", equalTo("hello world"));
+
+    response = RestAssured.get("/?lang=de");
+    System.out.println(response.body().asString());
+    response.then().assertThat()//
+            .body("html.body.h1", equalTo("Deutsch"));
   }
 }

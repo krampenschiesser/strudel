@@ -19,20 +19,27 @@ import de.ks.strudel.template.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.util.Locale;
 import java.util.Map;
 
+@Singleton
 public class ThymeleafEngine implements TemplateEngine {
 
   private final org.thymeleaf.TemplateEngine engine;
+  private final Provider<Locale> localeProvider;
 
   @Inject
-  public ThymeleafEngine(org.thymeleaf.TemplateEngine engine) {
+  public ThymeleafEngine(org.thymeleaf.TemplateEngine engine, Provider<Locale> localeProvider) {
     this.engine = engine;
+    this.localeProvider = localeProvider;
   }
 
   @Override
   public String render(Object model, String view) {
     Context context = new Context();
+    context.setLocale(localeProvider.get());
     @SuppressWarnings("unchecked")
     Map<String, Object> variables = (Map<String, Object>) model;
     context.setVariables(variables);
