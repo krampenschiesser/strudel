@@ -1,0 +1,4 @@
+dependencies {
+    compile "org.trimou:trimou-core:2.1.0.Final"
+    compile project(":core")
+}
