@@ -68,7 +68,7 @@ public class Router {
     routing.setFallbackHandler(after);
     routing.setInvalidMethodHandler(after);
 
-    mainHandler = new MainHandler(this);
+    mainHandler = new MainHandler(asyncRoute, exceptionMappings, before, routing, after);
   }
 
   private HttpHandler wrapInGzipHandler(HttpHandler handler) {
@@ -88,13 +88,13 @@ public class Router {
       httpHandler = createRouteHandler(route);
     }
 
-    RoutingHandler routingHandler;
+    RoutingHandler currentRoutingHandler;
     if (route.isFilter()) {
-      routingHandler = route.getFilterType() == FilterType.BEFORE ? before : after;
+      currentRoutingHandler = route.getFilterType() == FilterType.BEFORE ? before : after;
     } else {
-      routingHandler = routing;
+      currentRoutingHandler = routing;
     }
-    route.getMethods().forEach(m -> routingHandler.add(m, route.getPath(), httpHandler));
+    route.getMethods().forEach(m -> currentRoutingHandler.add(m, route.getPath(), httpHandler));
   }
 
   private HttpHandler createRouteHandler(Route route) {

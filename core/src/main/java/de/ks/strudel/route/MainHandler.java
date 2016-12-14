@@ -15,22 +15,36 @@
  */
 package de.ks.strudel.route;
 
+import de.ks.strudel.HandlerNoReturn;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.RoutingHandler;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 class MainHandler implements HttpHandler {
-  private final Router router;
 
-  public MainHandler(Router router) {
-    this.router = router;
+  private final ThreadLocal<Boolean> asyncRoute;
+  private final ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings;
+  private final RoutingHandler before;
+  private final RoutingHandler main;
+  private final RoutingHandler after;
+
+  public MainHandler(ThreadLocal<Boolean> asyncRoute, ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, RoutingHandler before, RoutingHandler main, RoutingHandler after) {
+    this.asyncRoute = asyncRoute;
+    this.exceptionMappings = exceptionMappings;
+    this.before = before;
+    this.main = main;
+    this.after = after;
   }
 
   @Override
   public void handleRequest(HttpServerExchange exchange) throws Exception {
-    AsyncRouteHandler asyncRouteHandler = new AsyncRouteHandler(router.asyncRoute);
-    EndExchangeHandler endExchangeHandler = new EndExchangeHandler(router.asyncRoute);
-    ExceptionHandler exceptionHandler = new ExceptionHandler(router.exceptionMappings);
-    BeforeAfterMainHandler beforeAfterMainHandler = new BeforeAfterMainHandler(router.before, router.routing, router.after, router.asyncRoute);
+    AsyncRouteHandler asyncRouteHandler = new AsyncRouteHandler(asyncRoute);
+    EndExchangeHandler endExchangeHandler = new EndExchangeHandler(asyncRoute);
+    ExceptionHandler exceptionHandler = new ExceptionHandler(exceptionMappings);
+    BeforeAfterMainHandler beforeAfterMainHandler = new BeforeAfterMainHandler(before, main, after, asyncRoute);
 
     asyncRouteHandler.setNext(endExchangeHandler);
     endExchangeHandler.setNext(exceptionHandler);
