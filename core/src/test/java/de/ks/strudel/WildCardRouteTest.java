@@ -15,6 +15,7 @@
  */
 package de.ks.strudel;
 
+import de.ks.strudel.util.StrudelTestExtension;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

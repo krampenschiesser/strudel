@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.ks.strudel;
+package de.ks.strudel.util;
 
 import java.io.File;
 import java.io.IOException;

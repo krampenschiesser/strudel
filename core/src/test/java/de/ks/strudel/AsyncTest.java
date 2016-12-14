@@ -15,6 +15,8 @@
  */
 package de.ks.strudel;
 
+import de.ks.strudel.util.Condition;
+import de.ks.strudel.util.StrudelTestExtension;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
@@ -86,6 +88,7 @@ public class AsyncTest {
     strudel.start();
     io.restassured.response.Response response = RestAssured.get("/");
     assertEquals("test", response.body().asString());
+    Condition.waitFor1s("Count not reached", () -> 2 == count.get());
     assertEquals(2, count.get(), "Callbacks have not been executed!");
   }
 }

@@ -5,7 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.ks.strudel.Strudel;
 import de.ks.strudel.StrudelModule;
-import de.ks.strudel.StrudelTestExtension;
+import de.ks.strudel.util.StrudelTestExtension;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.AfterEach;

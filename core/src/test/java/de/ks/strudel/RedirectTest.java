@@ -15,6 +15,7 @@
  */
 package de.ks.strudel;
 
+import de.ks.strudel.util.StrudelTestExtension;
 import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.Method;

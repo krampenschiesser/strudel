@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel;
+package de.ks.strudel.util;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import de.ks.strudel.Strudel;
+import de.ks.strudel.StrudelModule;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.extension.AfterEachCallback;

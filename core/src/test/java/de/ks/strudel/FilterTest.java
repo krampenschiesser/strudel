@@ -16,6 +16,7 @@
 package de.ks.strudel;
 
 import de.ks.strudel.route.HttpStatus;
+import de.ks.strudel.util.StrudelTestExtension;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

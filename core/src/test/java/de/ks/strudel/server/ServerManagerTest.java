@@ -25,7 +25,7 @@ public class ServerManagerTest {
   public void startServer() {
     Options options = new Options().port(0);//any
     RequestScope scope = Mockito.mock(RequestScope.class);
-    Router router = new Router(null, scope);
+    Router router = new Router(null, scope, null);
     router.addRoute(new RouteBuilder().get().path("/hello").handler(() -> (request, response) -> GREETING).build());
     serverManager = new ServerManager(options, router);
     serverManager.start();
