@@ -17,5 +17,9 @@ package de.ks.strudel.template;
 
 @FunctionalInterface
 public interface TemplateEngine {
+  String classPathPrefix = "/WEB-INF/template/";
+  String classPathPrefixNoSlash = "WEB-INF/template/";
+
+
   String render(Object model, String view) throws Exception;
 }

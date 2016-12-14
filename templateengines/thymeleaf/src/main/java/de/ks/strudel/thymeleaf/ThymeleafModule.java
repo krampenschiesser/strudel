@@ -25,7 +25,7 @@ public class ThymeleafModule extends AbstractModule {
   protected final String prefix;
 
   public ThymeleafModule() {
-    this("WEB-INF/");
+    this(de.ks.strudel.template.TemplateEngine.classPathPrefixNoSlash);
   }
 
   public ThymeleafModule(String prefix) {

@@ -24,7 +24,7 @@ public class FreemarkerModule extends AbstractModule {
   private final String classpathPrefix;
 
   public FreemarkerModule() {
-    this("/WEB-INF/public");
+    this(de.ks.strudel.template.TemplateEngine.classPathPrefix);
   }
 
   public FreemarkerModule(String classpathPrefix) {

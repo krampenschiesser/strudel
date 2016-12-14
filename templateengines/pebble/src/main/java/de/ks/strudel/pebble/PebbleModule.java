@@ -19,12 +19,13 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.loader.ClasspathLoader;
+import de.ks.strudel.template.TemplateEngine;
 
 public class PebbleModule extends AbstractModule {
   private final String classPathPrefix;
 
   public PebbleModule() {
-    this("WEB-INF/public");
+    this(TemplateEngine.classPathPrefixNoSlash);
   }
 
   public PebbleModule(String classPathPrefix) {
