@@ -15,16 +15,12 @@
  */
 package de.ks.strudel.route;
 
-import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import de.ks.strudel.scope.RequestScope;
-import de.ks.strudel.template.ModelAndView;
-import de.ks.strudel.template.TemplateEngine;
 import de.ks.strudel.template.TemplateEngineResolver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.Headers;
 
 class RouteHandler implements HttpHandler {
   private final Route route;
@@ -41,52 +37,17 @@ class RouteHandler implements HttpHandler {
 
   @Override
   public void handleRequest(HttpServerExchange ex) throws Exception {
-    if (route.isAsync() && ex.isInIoThread()) {
-      asyncRoute.set(true);
-      ex.dispatch(this);
-      return;
-    }
     Request request = new Request(ex);
     Response response = new Response(ex);
-    requestScope.enter(request, response);
-    try {
-      HandlerNoReturn asyncBefore = route.getAsyncBefore();
-      HandlerNoReturn asyncAfter = route.getAsyncAfter();
-      if (asyncBefore != null) {
-        asyncBefore.handle(request, response);
-      }
-      try {
-        Object retval = route.getHandler().handle(request, response);
-        if (route.getTemplateEngine() != null) {
-          retval = renderTemplate(retval);
-        }
-        if (retval != null) {
-          String data = String.valueOf(retval);
-          int length = data.getBytes().length;
-          if (length < Router.MTU) {
-            ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, length);//workaround, for some reason undertow doesn't always set this
-          }
-          ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
-          ex.getResponseSender().send(data, new NoCompletionCallback());
-        }
-      } finally {
-        if (asyncAfter != null) {
-          asyncAfter.handle(request, response);
-        }
-      }
-    } finally {
-      requestScope.exit();
-    }
-  }
 
-  private Object renderTemplate(Object retval) {
-    if (!(retval instanceof ModelAndView)) {
-      throw new IllegalStateException("in template route " + route.getPath() + " a " + ModelAndView.class.getSimpleName() + " needs to be returned");
-    }
-    @SuppressWarnings("unchecked")
-    ModelAndView mav = (ModelAndView) retval;
-    TemplateEngine templateEngine = templateEngineResolver.getTemplateEngine(route.getTemplateEngine());
-    retval = templateEngine.render(mav.getModel(), mav.getTemplateName());
-    return retval;
+    ExecuteAsAsyncHandler executeAsAsync = new ExecuteAsAsyncHandler(route, asyncRoute);
+    RequestScopeHandler requestScopeHandler = new RequestScopeHandler(requestScope);
+    AsyncCallbackHandler asyncCallbackHandler = new AsyncCallbackHandler(route.getAsyncBefore(), route.getAsyncAfter(), request, response);
+    RenderingAndExecutionHandler finalRouteHandler = new RenderingAndExecutionHandler(request, response, route, templateEngineResolver);
+    executeAsAsync.setNext(requestScopeHandler);
+    requestScopeHandler.setNext(asyncCallbackHandler);
+    asyncCallbackHandler.setNext(finalRouteHandler);
+
+    executeAsAsync.handleRequest(ex);
   }
 }
