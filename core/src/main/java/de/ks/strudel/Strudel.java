@@ -148,6 +148,14 @@ public class Strudel {
     return addStaticFiles(externalFolder, url, folderFileHandlerProvider.get());
   }
 
+  public void webjars() {
+    webjars("/webjars");
+  }
+
+  public void webjars(String url) {
+    classpathLocation("META-INF/resources/webjars/", url).getRouteBuilder().gzip();
+  }
+
   private StaticFiles addStaticFiles(String path, String url, StaticFileHandler handler) {
     StaticFiles staticFiles = new StaticFiles(path, url);
     handler.setStaticFileConfig(staticFiles);
