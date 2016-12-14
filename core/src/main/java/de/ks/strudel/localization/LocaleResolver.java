@@ -63,6 +63,10 @@ public class LocaleResolver {
   protected Locale getHttpHeaderLocale(HttpServerExchange exchange) {
     String acceptLanguage = exchange.getRequestHeaders().getFirst(Headers.ACCEPT_LANGUAGE);
     if (acceptLanguage != null) {
+      int endMainLang = acceptLanguage.indexOf(",");
+      if (endMainLang > 0) {
+        acceptLanguage = acceptLanguage.substring(0, endMainLang);
+      }
       Locale locale = Locale.forLanguageTag(acceptLanguage);
       return locale;
     }

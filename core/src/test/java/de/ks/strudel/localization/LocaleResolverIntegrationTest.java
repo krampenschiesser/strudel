@@ -48,7 +48,7 @@ public class LocaleResolverIntegrationTest {
     locale = Locale.forLanguageTag(RestAssured.given().cookie("lang", "de").get("/").body().asString());
     assertEquals(expected, locale);
 
-    locale = Locale.forLanguageTag(RestAssured.given().header(Headers.ACCEPT_LANGUAGE_STRING, "de").get("/").body().asString());
+    locale = Locale.forLanguageTag(RestAssured.given().header(Headers.ACCEPT_LANGUAGE_STRING, "de,en;q=0.8,de;q=0.6").get("/").body().asString());
     assertEquals(expected, locale);
 
     locale = Locale.forLanguageTag(RestAssured.get("/").body().asString());
