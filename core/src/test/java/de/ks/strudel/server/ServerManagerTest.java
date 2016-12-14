@@ -1,5 +1,6 @@
 package de.ks.strudel.server;
 
+import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.option.Options;
 import de.ks.strudel.route.RouteBuilder;
 import de.ks.strudel.route.Router;
@@ -25,7 +26,8 @@ public class ServerManagerTest {
   public void startServer() {
     Options options = new Options().port(0);//any
     RequestScope scope = Mockito.mock(RequestScope.class);
-    Router router = new Router(null, scope, null);
+    LocaleResolver localeResolver = Mockito.mock(LocaleResolver.class);
+    Router router = new Router(null, scope, null, localeResolver);
     router.addRoute(new RouteBuilder().get().path("/hello").handler(() -> (request, response) -> GREETING).build());
     serverManager = new ServerManager(options, router);
     serverManager.start();

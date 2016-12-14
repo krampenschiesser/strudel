@@ -16,8 +16,13 @@
 package de.ks.strudel.scope;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
+import com.google.inject.Provider;
+import com.google.inject.Provides;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+
+import java.util.Locale;
 
 public class ScopeModule extends AbstractModule {
   @Override
@@ -28,6 +33,20 @@ public class ScopeModule extends AbstractModule {
     bind(RequestScope.class).toInstance(requestScope);
     bind(Request.class).in(requestScope);
     bind(Response.class).in(requestScope);
+//    bind(Locale.class).in(requestScope);
 //    bind(HttpServerExchange.class).in(requestScope);
   }
+
+  @Provides
+  public Locale getLocale(RequestScope scope) {
+    Provider<Locale> provider = new Provider<Locale>() {
+      @Override
+      public Locale get() {
+        return Locale.ENGLISH;
+      }
+    };
+    Provider<Locale> scoped = scope.scope(Key.get(Locale.class), provider);
+    return scoped.get();
+  }
+
 }

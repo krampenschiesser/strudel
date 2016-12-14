@@ -20,15 +20,17 @@ import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class RequestScope implements Scope {
   private final ThreadLocal<Map<Key<?>, Object>> values = new ThreadLocal<>();
 
-  public void enter(Request request, Response response) {
+  public void enter(Request request, Response response, Locale locale) {
     HashMap<Key<?>, Object> map = new HashMap<>();
     map.put(Key.get(Request.class), request);
     map.put(Key.get(Response.class), response);
+    map.put(Key.get(Locale.class), locale);
     values.set(map);
   }
 

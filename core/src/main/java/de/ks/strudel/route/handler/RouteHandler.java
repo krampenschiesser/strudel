@@ -17,6 +17,7 @@ package de.ks.strudel.route.handler;
 
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.route.Route;
 import de.ks.strudel.scope.RequestScope;
 import de.ks.strudel.template.TemplateEngineResolver;
@@ -28,12 +29,14 @@ public class RouteHandler implements HttpHandler {
   private final RequestScope requestScope;
   private final ThreadLocal<Boolean> asyncRoute;
   private final TemplateEngineResolver templateEngineResolver;
+  private final LocaleResolver localeResolver;
 
-  public RouteHandler(Route route, RequestScope requestScope, ThreadLocal<Boolean> asyncRoute, TemplateEngineResolver templateEngineResolver) {
+  public RouteHandler(Route route, RequestScope requestScope, ThreadLocal<Boolean> asyncRoute, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver) {
     this.route = route;
     this.requestScope = requestScope;
     this.asyncRoute = asyncRoute;
     this.templateEngineResolver = templateEngineResolver;
+    this.localeResolver = localeResolver;
   }
 
   @Override
@@ -42,7 +45,7 @@ public class RouteHandler implements HttpHandler {
     Response response = new Response(ex);
 
     ExecuteAsAsyncHandler executeAsAsync = new ExecuteAsAsyncHandler(route, asyncRoute);
-    RequestScopeHandler requestScopeHandler = new RequestScopeHandler(requestScope);
+    RequestScopeHandler requestScopeHandler = new RequestScopeHandler(requestScope, localeResolver);
     AsyncCallbackHandler asyncCallbackHandler = new AsyncCallbackHandler(route.getAsyncBefore(), route.getAsyncAfter(), request, response);
     RenderingAndExecutionHandler finalRouteHandler = new RenderingAndExecutionHandler(request, response, route, templateEngineResolver);
     executeAsAsync.setNext(requestScopeHandler);

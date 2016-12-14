@@ -17,6 +17,7 @@ package de.ks.strudel.route;
 
 import com.google.inject.Injector;
 import de.ks.strudel.HandlerNoReturn;
+import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.route.handler.MainHandler;
 import de.ks.strudel.route.handler.RouteHandler;
 import de.ks.strudel.scope.RequestScope;
@@ -52,12 +53,14 @@ public class Router {
   final Injector injector;
   final RequestScope requestScope;
   private final TemplateEngineResolver templateEngineResolver;
+  private final LocaleResolver localeResolver;
 
   @Inject
-  public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver) {
+  public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver) {
     this.injector = injector;
     this.requestScope = requestScope;
     this.templateEngineResolver = templateEngineResolver;
+    this.localeResolver = localeResolver;
 
     routing = Handlers.routing();
     before = Handlers.routing();
@@ -100,7 +103,7 @@ public class Router {
   }
 
   private HttpHandler createRouteHandler(Route route) {
-    return new RouteHandler(route, requestScope, asyncRoute, templateEngineResolver);
+    return new RouteHandler(route, requestScope, asyncRoute, templateEngineResolver, localeResolver);
   }
 
   public void addExceptionHandler(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {

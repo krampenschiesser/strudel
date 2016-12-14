@@ -17,24 +17,27 @@ package de.ks.strudel.route.handler;
 
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.scope.RequestScope;
 import io.undertow.server.HttpServerExchange;
 
-import javax.inject.Inject;
+import java.util.Locale;
 
 public class RequestScopeHandler extends WrappingHandler {
   private final RequestScope requestScope;
+  private final LocaleResolver localeResolver;
 
-  @Inject
-  public RequestScopeHandler(RequestScope requestScope) {
+  public RequestScopeHandler(RequestScope requestScope, LocaleResolver localeResolver) {
     this.requestScope = requestScope;
+    this.localeResolver = localeResolver;
   }
 
   @Override
   protected boolean before(HttpServerExchange ex) {
     Request request = new Request(ex);
     Response response = new Response(ex);
-    requestScope.enter(request, response);
+    Locale locale = localeResolver.getLocale(ex);
+    requestScope.enter(request, response, locale);
     return true;
   }
 
