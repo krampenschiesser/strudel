@@ -7,7 +7,7 @@
 <body>
 <b th:if="${if}">true</b>
 <p th:text="${hello}"></p>
-<div th:replace="/WEB-INF/include.html:: include"></div>
+<div th:replace="include:: include"></div>
 <h1 th:text="#{key}">No translation</h1>
 </body>
 </html>

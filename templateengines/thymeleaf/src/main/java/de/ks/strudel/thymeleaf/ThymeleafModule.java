@@ -22,9 +22,26 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
 public class ThymeleafModule extends AbstractModule {
+  protected final String prefix;
+
+  public ThymeleafModule() {
+    this("WEB-INF/");
+  }
+
+  public ThymeleafModule(String prefix) {
+    this.prefix = prefix;
+  }
+
   @Override
   protected void configure() {
-    bind(ITemplateResolver.class).to(ClassLoaderTemplateResolver.class);
+  }
+
+  @Provides
+  public ITemplateResolver getTemplateResolver() {
+    ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+    templateResolver.setSuffix(".html");
+    templateResolver.setPrefix(prefix);
+    return templateResolver;
   }
 
   @Provides

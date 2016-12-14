@@ -36,7 +36,7 @@ class ThymeleafEngineTest {
       model.put("title", "myTitle");
       model.put("if", true);
       model.put("hello", "Hello Sauerland");
-      return new ModelAndView(model, "/WEB-INF/index.html");
+      return new ModelAndView(model, "index");
     }).template(ThymeleafEngine.class);
 
     strudel.start();
