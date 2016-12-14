@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+</head>
+<body>
+{{#condition }}
+<b>true</b>
+{{/condition}}
+<p>{{ hello }}</p>
+{{> include }}
+
+<h1>{{ i18n "key" bundle="WEB-INF/template/index" locale=locale }}</h1>
+</body>
+</html>

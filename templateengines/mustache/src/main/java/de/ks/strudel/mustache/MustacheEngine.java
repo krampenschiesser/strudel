@@ -13,32 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.handlebars;
+package de.ks.strudel.mustache;
 
-import com.github.jknack.handlebars.Context;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 import de.ks.strudel.template.TemplateEngine;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
-import java.util.Locale;
+import java.io.StringWriter;
 
-public class HandlebarsEngine implements TemplateEngine {
-  private final Provider<Locale> localeProvider;
-  private final Handlebars handlebars;
+public class MustacheEngine implements TemplateEngine {
+  private final MustacheFactory factory;
 
   @Inject
-  public HandlebarsEngine(Provider<Locale> localeProvider, Handlebars handlebars) {
-    this.localeProvider = localeProvider;
-    this.handlebars = handlebars;
+  public MustacheEngine(MustacheFactory factory) {
+    this.factory = factory;
   }
 
   @Override
   public String render(Object model, String view) throws Exception {
-    Template template = handlebars.compile(view);
-    Context context = Context.newBuilder(model).build().combine("locale", localeProvider.get().getLanguage());
-    String html = template.apply(context);
+    Mustache mustache = factory.compile(view);
+    StringWriter writer = new StringWriter();
+    mustache.execute(writer, model);
+    String html = writer.toString();
     return html;
   }
 }

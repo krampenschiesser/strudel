@@ -13,32 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.handlebars;
+package de.ks.strudel.mustache;
 
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.MustacheFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import de.ks.strudel.template.TemplateEngine;
 
-public class HandlebarsModule extends AbstractModule {
-  private String classPathPrefix;
-
-  public HandlebarsModule() {
-    this(TemplateEngine.classPathPrefix);
-  }
-
-  public HandlebarsModule(String classPathPrefix) {
-    this.classPathPrefix = classPathPrefix;
-  }
-
+public class MustacheModule extends AbstractModule {
   @Override
   protected void configure() {
 
   }
 
   @Provides
-  public Handlebars getHandlebars() {
-    return new Handlebars(new ClassPathTemplateLoader(classPathPrefix));
+  public MustacheFactory getMustache() {
+    MustacheFactory mf = new DefaultMustacheFactory();
+    return mf;
   }
 }
