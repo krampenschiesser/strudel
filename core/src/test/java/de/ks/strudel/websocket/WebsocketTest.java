@@ -18,12 +18,10 @@ package de.ks.strudel.websocket;
 import de.ks.strudel.Strudel;
 import de.ks.strudel.util.StrudelTestExtension;
 import io.restassured.RestAssured;
-import io.undertow.websockets.WebSocketConnectionCallback;
 import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
-import io.undertow.websockets.spi.WebSocketHttpExchange;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.Test;
@@ -49,19 +47,12 @@ public class WebsocketTest {
 
   @Test
   void echo() throws Exception {
-    strudel.websocket("/echo", new WebSocketConnectionCallback() {
+    strudel.websocket("/echo", null, () -> new AbstractReceiveListener() {
       @Override
-      public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel) {
-        log.info("Got connection from {}", channel.getUrl());
-        channel.getReceiveSetter().set(new AbstractReceiveListener() {
-          @Override
-          protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) throws IOException {
-            String data = message.getData();
-            log.info("Received message {}", data);
-            WebSockets.sendText("Server: " + data, channel, null);
-          }
-        });
-        channel.resumeReceives();
+      protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) throws IOException {
+        String data = message.getData();
+        log.info("Received message {}", data);
+        WebSockets.sendText("Server: " + data, channel, null);
       }
     });
     strudel.start();

@@ -24,8 +24,13 @@ import de.ks.strudel.handler.StaticFileHandler;
 import de.ks.strudel.option.Options;
 import de.ks.strudel.route.*;
 import de.ks.strudel.server.ServerManager;
+import de.ks.strudel.websocket.OnWebSocketOpen;
 import io.undertow.websockets.WebSocketConnectionCallback;
+import io.undertow.websockets.core.AbstractReceiveListener;
+import io.undertow.websockets.core.WebSocketChannel;
+import io.undertow.websockets.spi.WebSocketHttpExchange;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -152,6 +157,20 @@ public class Strudel {
 
   public void webjars(String path) {
     classpathLocation("META-INF/resources/webjars/", path).getRouteBuilder().gzip();
+  }
+
+  public void websocket(String path, @Nullable OnWebSocketOpen openCallback, Supplier<AbstractReceiveListener> listener) {
+    WebSocketConnectionCallback callback = new WebSocketConnectionCallback() {
+      @Override
+      public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel) {
+        if (openCallback != null) {
+          openCallback.accept(exchange, channel);
+        }
+        channel.getReceiveSetter().set(listener.get());
+        channel.resumeReceives();
+      }
+    };
+    websocket(path, callback);
   }
 
   public void websocket(String path, WebSocketConnectionCallback webSocketConnectionCallback) {
