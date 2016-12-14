@@ -19,7 +19,7 @@ class ThymeleafEngineTest {
 
   @BeforeEach
   void setUp() {
-    strudel = Strudel.create();
+    strudel = Strudel.create(new ThymeleafModule());
     RestAssured.port = strudel.options().port();
     RestAssured.defaultParser = Parser.HTML;
   }

@@ -17,17 +17,17 @@ package de.ks.strudel.thymeleaf;
 
 import de.ks.strudel.template.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import javax.inject.Inject;
 import java.util.Map;
 
 public class ThymeleafEngine implements TemplateEngine {
 
   private final org.thymeleaf.TemplateEngine engine;
 
-  public ThymeleafEngine() {
-    engine = new org.thymeleaf.TemplateEngine();
-    engine.setTemplateResolver(new ClassLoaderTemplateResolver());
+  @Inject
+  public ThymeleafEngine(org.thymeleaf.TemplateEngine engine) {
+    this.engine = engine;
   }
 
   @Override

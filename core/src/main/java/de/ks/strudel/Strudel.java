@@ -17,6 +17,7 @@ package de.ks.strudel;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import de.ks.strudel.handler.ClassPathFileHandler;
 import de.ks.strudel.handler.FolderFileHandler;
 import de.ks.strudel.handler.StaticFileHandler;
@@ -31,13 +32,17 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
 @Singleton
 public class Strudel {
-  public static Strudel create() {
-    Injector injector = Guice.createInjector(new StrudelModule());
+  public static Strudel create(Module... modules) {
+    ArrayList<Module> all = new ArrayList<>();
+    all.addAll(Arrays.asList(modules));
+    all.add(new StrudelModule());
+    Injector injector = Guice.createInjector(all);
     return injector.getInstance(Strudel.class);
   }
 
@@ -74,6 +79,7 @@ public class Strudel {
   public RouteBuilder put(String path, Class<? extends Handler> handler) {
     return add(HttpMethod.PUT, path, () -> injector.getInstance(handler));
   }
+
   public RouteBuilder put(String path, Handler handler) {
     return add(HttpMethod.PUT, path, () -> handler);
   }
@@ -81,6 +87,7 @@ public class Strudel {
   public RouteBuilder post(String path, Class<? extends Handler> handler) {
     return add(HttpMethod.POST, path, () -> injector.getInstance(handler));
   }
+
   public RouteBuilder post(String path, Handler handler) {
     return add(HttpMethod.POST, path, () -> handler);
   }
@@ -88,6 +95,7 @@ public class Strudel {
   public RouteBuilder delete(String path, Class<? extends Handler> handler) {
     return add(HttpMethod.DELETE, path, () -> injector.getInstance(handler));
   }
+
   public RouteBuilder delete(String path, Handler handler) {
     return add(HttpMethod.DELETE, path, () -> handler);
   }
@@ -127,6 +135,7 @@ public class Strudel {
   public void exception(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {
     router.addExceptionHandler(clazz, handler);
   }
+
   public void exception(Class<? extends Exception> clazz, HandlerNoReturn handler) {
     router.addExceptionHandler(clazz, handler);
   }
