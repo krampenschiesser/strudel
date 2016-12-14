@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route;
+package de.ks.strudel.route.handler;
 
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;

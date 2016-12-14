@@ -13,33 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route;
+package de.ks.strudel.route.handler;
 
+import io.undertow.io.IoCallback;
+import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
+import org.xnio.IoUtils;
 
-public class ExecuteAsAsyncHandler extends WrappingHandler {
+import java.io.IOException;
 
-  private final Route route;
-  private final ThreadLocal<Boolean> asyncRoute;
-
-  public ExecuteAsAsyncHandler(Route route, ThreadLocal<Boolean> asyncRoute) {
-    this.route = route;
-    this.asyncRoute = asyncRoute;
+class NoCompletionCallback implements IoCallback {
+  @Override
+  public void onComplete(HttpServerExchange exchange, Sender sender) {
   }
 
   @Override
-  protected boolean before(HttpServerExchange ex) {
-    if (route.isAsync() && ex.isInIoThread()) {
-      asyncRoute.set(true);
-      ex.dispatch(this);
-      return false;
-    } else {
-      return true;
+  public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
+    try {
+      exchange.endExchange();
+    } finally {
+      IoUtils.safeClose(exchange.getConnection());
     }
-  }
-
-  @Override
-  protected void after(HttpServerExchange exchange) {
-
   }
 }

@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route;
+package de.ks.strudel.route.handler;
 
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.route.Route;
 import de.ks.strudel.scope.RequestScope;
 import de.ks.strudel.template.TemplateEngineResolver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
-class RouteHandler implements HttpHandler {
+public class RouteHandler implements HttpHandler {
   private final Route route;
   private final RequestScope requestScope;
   private final ThreadLocal<Boolean> asyncRoute;

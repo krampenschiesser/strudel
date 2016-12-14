@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route;
+package de.ks.strudel.route.handler;
 
 import de.ks.strudel.HaltException;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.route.HttpStatus;
 import io.undertow.server.HttpServerExchange;
 
 import java.util.Map;

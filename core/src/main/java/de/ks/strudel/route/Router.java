@@ -17,6 +17,8 @@ package de.ks.strudel.route;
 
 import com.google.inject.Injector;
 import de.ks.strudel.HandlerNoReturn;
+import de.ks.strudel.route.handler.MainHandler;
+import de.ks.strudel.route.handler.RouteHandler;
 import de.ks.strudel.scope.RequestScope;
 import de.ks.strudel.template.TemplateEngineResolver;
 import io.undertow.Handlers;

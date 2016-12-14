@@ -13,27 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route;
+package de.ks.strudel.route.handler;
 
+import de.ks.strudel.HandlerNoReturn;
+import de.ks.strudel.Request;
+import de.ks.strudel.Response;
 import io.undertow.server.HttpServerExchange;
 
-public class AsyncRouteHandler extends WrappingHandler {
-  private final ThreadLocal<Boolean> asyncRoute;
+import javax.annotation.Nullable;
 
-  public AsyncRouteHandler(ThreadLocal<Boolean> asyncRoute) {
-    this.asyncRoute = asyncRoute;
+public class AsyncCallbackHandler extends WrappingHandler {
+  private final HandlerNoReturn asyncBefore;
+  private final HandlerNoReturn asyncAfter;
+  private final Request request;
+  private final Response response;
+
+  public AsyncCallbackHandler(@Nullable HandlerNoReturn asyncBefore, @Nullable HandlerNoReturn asyncAfter, Request request, Response response) {
+    this.asyncBefore = asyncBefore;
+    this.asyncAfter = asyncAfter;
+    this.request = request;
+    this.response = response;
   }
 
   @Override
   protected boolean before(HttpServerExchange exchange) throws Exception {
-    asyncRoute.set(false);
+    if (asyncBefore != null) {
+      asyncBefore.handle(request, response);
+    }
     return true;
   }
 
   @Override
   protected void after(HttpServerExchange exchange) throws Exception {
-    if (asyncRoute.get()) {
-      asyncRoute.set(false);
+    if (asyncAfter != null) {
+      asyncAfter.handle(request, response);
     }
   }
 }

@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route;
+package de.ks.strudel.route.handler;
 
+import de.ks.strudel.route.HttpStatus;
 import io.undertow.server.HttpServerExchange;
 
 public class EndExchangeHandler extends WrappingHandler {

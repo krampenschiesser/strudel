@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route;
+package de.ks.strudel.route.handler;
 
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.route.Route;
+import de.ks.strudel.route.Router;
 import de.ks.strudel.template.ModelAndView;
 import de.ks.strudel.template.TemplateEngine;
 import de.ks.strudel.template.TemplateEngineResolver;
