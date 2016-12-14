@@ -45,21 +45,7 @@ class MainHandler implements HttpHandler {
       } catch (HaltException e) {
         throw e;
       } catch (Exception e) {
-        HandlerNoReturn handler = Optional.ofNullable(router.exceptionMappings.get(e.getClass())).map(Supplier::get).orElse(null);
-        if (handler == null) {
-          handler = router.exceptionMappings.entrySet().stream()//
-                                            .filter(entry -> entry.getKey().isAssignableFrom(e.getClass()))//
-                                            .map(Map.Entry::getValue).map(Supplier::get)//
-                                            .findFirst().orElse(null);
-        }
-        if (handler != null) {
-          handler.handle(new Request(exchange), new Response(exchange));
-          if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
-            exchange.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
-          }
-        } else {
-          throw e;
-        }
+        handleException(exchange, e);
       }
       if (router.asyncRoute.get()) {
         router.asyncRoute.set(false);
@@ -75,8 +61,30 @@ class MainHandler implements HttpHandler {
         }
       }
     } catch (HaltException e) {
-      exchange.setStatusCode(e.getStatus());
-      exchange.endExchange();
+      handleHalt(exchange, e);
+    }
+  }
+
+  private void handleHalt(HttpServerExchange exchange, HaltException e) {
+    exchange.setStatusCode(e.getStatus());
+    exchange.endExchange();
+  }
+
+  private void handleException(HttpServerExchange exchange, Exception e) throws Exception {
+    HandlerNoReturn handler = Optional.ofNullable(router.exceptionMappings.get(e.getClass())).map(Supplier::get).orElse(null);
+    if (handler == null) {
+      handler = router.exceptionMappings.entrySet().stream()//
+                                        .filter(entry -> entry.getKey().isAssignableFrom(e.getClass()))//
+                                        .map(Map.Entry::getValue).map(Supplier::get)//
+                                        .findFirst().orElse(null);
+    }
+    if (handler != null) {
+      handler.handle(new Request(exchange), new Response(exchange));
+      if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
+        exchange.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
+      }
+    } else {
+      throw e;
     }
   }
 }

@@ -18,6 +18,7 @@ package de.ks.strudel.route;
 import com.google.inject.Injector;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.scope.RequestScope;
+import de.ks.strudel.template.TemplateEngineResolver;
 import io.undertow.Handlers;
 import io.undertow.attribute.ResponseHeaderAttribute;
 import io.undertow.predicate.Predicate;
@@ -48,11 +49,13 @@ public class Router {
   final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
   final Injector injector;
   final RequestScope requestScope;
+  private final TemplateEngineResolver templateEngineResolver;
 
   @Inject
-  public Router(Injector injector, RequestScope requestScope) {
+  public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver) {
     this.injector = injector;
     this.requestScope = requestScope;
+    this.templateEngineResolver = templateEngineResolver;
 
     routing = Handlers.routing();
     before = Handlers.routing();
@@ -95,7 +98,7 @@ public class Router {
   }
 
   private HttpHandler createRouteHandler(Route route) {
-    return new RouteHandler(route, requestScope, asyncRoute, injector);
+    return new RouteHandler(route, requestScope, asyncRoute, templateEngineResolver);
   }
 
   public void addExceptionHandler(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {

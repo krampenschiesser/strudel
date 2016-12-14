@@ -15,13 +15,13 @@
  */
 package de.ks.strudel.route;
 
-import com.google.inject.Injector;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import de.ks.strudel.scope.RequestScope;
 import de.ks.strudel.template.ModelAndView;
 import de.ks.strudel.template.TemplateEngine;
+import de.ks.strudel.template.TemplateEngineResolver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
@@ -30,13 +30,13 @@ class RouteHandler implements HttpHandler {
   private final Route route;
   private final RequestScope requestScope;
   private final ThreadLocal<Boolean> asyncRoute;
-  private final Injector injector;
+  private final TemplateEngineResolver templateEngineResolver;
 
-  public RouteHandler(Route route, RequestScope requestScope, ThreadLocal<Boolean> asyncRoute, Injector injector) {
+  public RouteHandler(Route route, RequestScope requestScope, ThreadLocal<Boolean> asyncRoute, TemplateEngineResolver templateEngineResolver) {
     this.route = route;
     this.requestScope = requestScope;
     this.asyncRoute = asyncRoute;
-    this.injector = injector;
+    this.templateEngineResolver = templateEngineResolver;
   }
 
   @Override
@@ -58,13 +58,7 @@ class RouteHandler implements HttpHandler {
       try {
         Object retval = route.getHandler().handle(request, response);
         if (route.getTemplateEngine() != null) {
-          if (!(retval instanceof ModelAndView)) {
-            throw new IllegalStateException("in template route " + route.getPath() + " a " + ModelAndView.class.getSimpleName() + " needs to be returned");
-          }
-          @SuppressWarnings("unchecked")
-          ModelAndView mav = (ModelAndView) retval;
-          TemplateEngine templateEngine = injector.getInstance(route.getTemplateEngine());
-          retval = templateEngine.render(mav.getModel(), mav.getTemplateName());
+          retval = renderTemplate(retval);
         }
         if (retval != null) {
           String data = String.valueOf(retval);
@@ -83,5 +77,16 @@ class RouteHandler implements HttpHandler {
     } finally {
       requestScope.exit();
     }
+  }
+
+  private Object renderTemplate(Object retval) {
+    if (!(retval instanceof ModelAndView)) {
+      throw new IllegalStateException("in template route " + route.getPath() + " a " + ModelAndView.class.getSimpleName() + " needs to be returned");
+    }
+    @SuppressWarnings("unchecked")
+    ModelAndView mav = (ModelAndView) retval;
+    TemplateEngine templateEngine = templateEngineResolver.getTemplateEngine(route.getTemplateEngine());
+    retval = templateEngine.render(mav.getModel(), mav.getTemplateName());
+    return retval;
   }
 }
