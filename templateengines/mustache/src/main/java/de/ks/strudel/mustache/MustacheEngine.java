@@ -20,8 +20,10 @@ import com.github.mustachejava.MustacheFactory;
 import de.ks.strudel.template.TemplateEngine;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.StringWriter;
 
+@Singleton
 public class MustacheEngine implements TemplateEngine {
   private final MustacheFactory factory;
 

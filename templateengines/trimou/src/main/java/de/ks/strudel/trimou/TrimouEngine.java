@@ -20,7 +20,9 @@ import org.trimou.Mustache;
 import org.trimou.engine.MustacheEngine;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class TrimouEngine implements TemplateEngine {
 
   private final MustacheEngine engine;

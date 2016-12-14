@@ -22,8 +22,10 @@ import de.ks.strudel.template.TemplateEngine;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.util.Locale;
 
+@Singleton
 public class HandlebarsEngine implements TemplateEngine {
   private final Provider<Locale> localeProvider;
   private final Handlebars handlebars;
