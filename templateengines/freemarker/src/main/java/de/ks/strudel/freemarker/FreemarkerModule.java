@@ -13,9 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.template;
+package de.ks.strudel.freemarker;
 
-@FunctionalInterface
-public interface TemplateEngine {
-  String render(Object model, String view) throws Exception;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.template.Configuration;
+
+public class FreemarkerModule extends AbstractModule {
+  @Override
+  protected void configure() {
+
+  }
+
+  @Provides
+  public Configuration getConfiguration() {
+    Configuration configuration = new Configuration(Configuration.VERSION_2_3_25);
+    configuration.setTemplateLoader(new ClassTemplateLoader(getClass(), "/WEB-INF/public"));
+    return configuration;
+  }
 }

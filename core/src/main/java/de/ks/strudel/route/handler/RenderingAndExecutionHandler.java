@@ -56,7 +56,7 @@ public class RenderingAndExecutionHandler implements HttpHandler {
     }
   }
 
-  private Object renderTemplate(Object retval) {
+  private Object renderTemplate(Object retval) throws Exception {
     if (!(retval instanceof ModelAndView)) {
       throw new IllegalStateException("in template route " + route.getPath() + " a " + ModelAndView.class.getSimpleName() + " needs to be returned");
     }
