@@ -33,9 +33,15 @@ public abstract class WrappingHandler implements HttpHandler {
       if (continueExecution) {
         next.handleRequest(exchange);
       }
+    } catch (Exception e) {
+      handleException(e, exchange);
     } finally {
       after(exchange);
     }
+  }
+
+  protected void handleException(Exception e, HttpServerExchange exchange) throws Exception {
+    throw e;
   }
 
   /**

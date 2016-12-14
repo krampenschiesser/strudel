@@ -17,25 +17,29 @@ package de.ks.strudel.route;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.RoutingHandler;
 
-class MainHandler implements HttpHandler {
-  private final Router router;
+public class BeforeAfterMainHandler implements HttpHandler {
+  private final RoutingHandler before;
+  private final RoutingHandler main;
+  private final RoutingHandler after;
+  private final ThreadLocal<Boolean> asyncRoute;
 
-  public MainHandler(Router router) {
-    this.router = router;
+  public BeforeAfterMainHandler(RoutingHandler before, RoutingHandler main, RoutingHandler after, ThreadLocal<Boolean> asyncRoute) {
+    this.before = before;
+    this.main = main;
+    this.after = after;
+    this.asyncRoute = asyncRoute;
   }
 
   @Override
   public void handleRequest(HttpServerExchange exchange) throws Exception {
-    AsyncRouteHandler asyncRouteHandler = new AsyncRouteHandler(router.asyncRoute);
-    EndExchangeHandler endExchangeHandler = new EndExchangeHandler(router.asyncRoute);
-    ExceptionHandler exceptionHandler = new ExceptionHandler(router.exceptionMappings);
-    BeforeAfterMainHandler beforeAfterMainHandler = new BeforeAfterMainHandler(router.before, router.routing, router.after, router.asyncRoute);
-
-    asyncRouteHandler.setNext(endExchangeHandler);
-    endExchangeHandler.setNext(exceptionHandler);
-    exceptionHandler.setNext(beforeAfterMainHandler);
-
-    asyncRouteHandler.handleRequest(exchange);
+    before.handleRequest(exchange);
+    if (!exchange.isComplete()) {
+      main.handleRequest(exchange);
+      if (!asyncRoute.get()) {
+        after.handleRequest(exchange);
+      }
+    }
   }
 }
