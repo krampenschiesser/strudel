@@ -1,0 +1,4 @@
+dependencies {
+    compile 'de.neuland-bfi:jade4j:1.2.5'
+    compile project(":core")
+}
