@@ -154,6 +154,10 @@ public class Request {
     return exchange.getRequestStartTime();
   }
 
+  public long contentLength() {
+    return exchange.getRequestContentLength();
+  }
+
   public Locale getLocale() {
     return locale;
   }
