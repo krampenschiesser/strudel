@@ -6,3 +6,13 @@ include "templateengines:mustache"
 include "templateengines:pebble"
 include "templateengines:thymeleaf"
 include "templateengines:trimou"
+
+project(":core").name = "strudel-core"
+
+project(":templateengines:freemarker").name="strudel-template-freemarker"
+project(":templateengines:handlebars").name="strudel-template-handlebars"
+project(":templateengines:jade").name="strudel-template-jade"
+project(":templateengines:mustache").name="strudel-template-mustache"
+project(":templateengines:pebble").name="strudel-template-pebble"
+project(":templateengines:thymeleaf").name="strudel-template-thymeleaf"
+project(":templateengines:trimou").name="strudel-template-trimou"

@@ -1,4 +1,22 @@
 dependencies {
-    compile 'org.freemarker:freemarker:2.3.25-incubating'
-    compile project(":core")
+    compile "org.freemarker:freemarker:$freemarker"
+    compile project(":strudel-core")
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId 'strudel-core'
+
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
+    }
 }

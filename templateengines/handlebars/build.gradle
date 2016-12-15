@@ -1,4 +1,21 @@
 dependencies {
-    compile 'com.github.jknack:handlebars:4.0.6'
-    compile project(":core")
+    compile "com.github.jknack:handlebars:$handlebars"
+    compile project(":strudel-core")
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
+    }
 }

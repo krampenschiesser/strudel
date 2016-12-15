@@ -11,8 +11,23 @@ dependencies {
     runtime "ch.qos.logback:logback-core:$logback"
     runtime "ch.qos.logback:logback-classic:$logback"
 
-//    testCompile 'org.glassfish.tyrus.bundles:tyrus-standalone-client:1.13'
-    testCompile 'org.java-websocket:Java-WebSocket:1.3.0'
+    testCompile "org.java-websocket:Java-WebSocket:1.3.0"
+    testRuntime "org.webjars:jquery:2.2.1"
+}
 
-    testRuntime 'org.webjars:jquery:2.2.1'
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
+    }
 }

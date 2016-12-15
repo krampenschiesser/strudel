@@ -1,4 +1,22 @@
 dependencies {
-    compile "org.trimou:trimou-core:2.1.0.Final"
-    compile project(":core")
+    compile "org.trimou:trimou-core:$trimou"
+    compile project(":strudel-core")
+}
+
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
+    }
 }
