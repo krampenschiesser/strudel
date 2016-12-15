@@ -22,6 +22,8 @@ import de.ks.strudel.Response;
 import de.ks.strudel.route.HttpStatus;
 import io.undertow.server.HttpServerExchange;
 
+import javax.inject.Provider;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,9 +31,11 @@ import java.util.function.Supplier;
 
 public class ExceptionHandler extends WrappingHandler {
   private final ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings;
+  private final Provider<Locale> localeProvider;
 
-  public ExceptionHandler(ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings) {
+  public ExceptionHandler(ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, Provider<Locale> localeProvider) {
     this.exceptionMappings = exceptionMappings;
+    this.localeProvider = localeProvider;
   }
 
   @Override
@@ -64,12 +68,21 @@ public class ExceptionHandler extends WrappingHandler {
                                  .findFirst().orElse(null);
     }
     if (handler != null) {
-      handler.handle(new Request(exchange), new Response(exchange));
+      Locale locale = safeGetLocale();
+      handler.handle(new Request(exchange, locale), new Response(exchange));
       if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
         exchange.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
       }
     } else {
       throw e;
+    }
+  }
+
+  private Locale safeGetLocale() {
+    try {
+      return localeProvider.get();
+    } catch (Exception e) {
+      return Locale.ENGLISH;
     }
   }
 }

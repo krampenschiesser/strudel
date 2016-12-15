@@ -24,6 +24,8 @@ import de.ks.strudel.template.TemplateEngineResolver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
+import java.util.Locale;
+
 public class RouteHandler implements HttpHandler {
   private final Route route;
   private final RequestScope requestScope;
@@ -41,7 +43,7 @@ public class RouteHandler implements HttpHandler {
 
   @Override
   public void handleRequest(HttpServerExchange ex) throws Exception {
-    Request request = new Request(ex);
+    Request request = new Request(ex, Locale.ENGLISH);
     Response response = new Response(ex);
 
     ExecuteAsAsyncHandler executeAsAsync = new ExecuteAsAsyncHandler(route, asyncRoute);

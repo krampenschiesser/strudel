@@ -34,9 +34,9 @@ public class RequestScopeHandler extends WrappingHandler {
 
   @Override
   protected boolean before(HttpServerExchange ex) {
-    Request request = new Request(ex);
-    Response response = new Response(ex);
     Locale locale = localeResolver.getLocale(ex);
+    Request request = new Request(ex, locale);
+    Response response = new Response(ex);
     requestScope.enter(request, response, locale);
     return true;
   }

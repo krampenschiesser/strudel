@@ -20,6 +20,8 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
 
+import javax.inject.Provider;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -30,20 +32,22 @@ public class MainHandler implements HttpHandler {
   private final RoutingHandler before;
   private final RoutingHandler main;
   private final RoutingHandler after;
+  private final Provider<Locale> localeProvider;
 
-  public MainHandler(ThreadLocal<Boolean> asyncRoute, ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, RoutingHandler before, RoutingHandler main, RoutingHandler after) {
+  public MainHandler(ThreadLocal<Boolean> asyncRoute, ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, RoutingHandler before, RoutingHandler main, RoutingHandler after, Provider<Locale> localeProvider) {
     this.asyncRoute = asyncRoute;
     this.exceptionMappings = exceptionMappings;
     this.before = before;
     this.main = main;
     this.after = after;
+    this.localeProvider = localeProvider;
   }
 
   @Override
   public void handleRequest(HttpServerExchange exchange) throws Exception {
     AsyncRouteHandler asyncRouteHandler = new AsyncRouteHandler(asyncRoute);
     EndExchangeHandler endExchangeHandler = new EndExchangeHandler(asyncRoute);
-    ExceptionHandler exceptionHandler = new ExceptionHandler(exceptionMappings);
+    ExceptionHandler exceptionHandler = new ExceptionHandler(exceptionMappings, localeProvider);
     BeforeAfterMainHandler beforeAfterMainHandler = new BeforeAfterMainHandler(before, main, after, asyncRoute);
 
     asyncRouteHandler.setNext(endExchangeHandler);

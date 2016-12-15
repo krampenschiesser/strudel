@@ -34,7 +34,9 @@ import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 import io.undertow.util.Headers;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -52,11 +54,11 @@ public class Router {
   final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
   final Injector injector;
   final RequestScope requestScope;
-  private final TemplateEngineResolver templateEngineResolver;
-  private final LocaleResolver localeResolver;
+  final TemplateEngineResolver templateEngineResolver;
+  final LocaleResolver localeResolver;
 
   @Inject
-  public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver) {
+  public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver, Provider<Locale> localeProvider) {
     this.injector = injector;
     this.requestScope = requestScope;
     this.templateEngineResolver = templateEngineResolver;
@@ -73,7 +75,7 @@ public class Router {
     routing.setFallbackHandler(after);
     routing.setInvalidMethodHandler(after);
 
-    mainHandler = new MainHandler(asyncRoute, exceptionMappings, before, routing, after);
+    mainHandler = new MainHandler(asyncRoute, exceptionMappings, before, routing, after, localeProvider);
   }
 
   private HttpHandler wrapInGzipHandler(HttpHandler handler) {
