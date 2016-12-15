@@ -18,7 +18,7 @@ package de.ks.strudel.route;
 import io.undertow.util.HttpString;
 
 public enum HttpMethod {
-  GET, PUT, POST, DELETE, ANY;
+  GET, PUT, POST, DELETE, ALL;
 
   private final HttpString method;
 

@@ -71,6 +71,14 @@ public class Strudel {
     return options;
   }
 
+  public RouteBuilder all(String path, Class<? extends Handler> handler) {
+    return add(HttpMethod.ALL, path, () -> injector.getInstance(handler));
+  }
+
+  public RouteBuilder all(String path, Handler handler) {
+    return add(HttpMethod.ALL, path, () -> handler);
+  }
+
   public RouteBuilder get(String path, Class<? extends Handler> handler) {
     return add(HttpMethod.GET, path, () -> injector.getInstance(handler));
   }
@@ -112,11 +120,11 @@ public class Strudel {
   }
 
   public RouteBuilder before(String path, Handler handler) {
-    return add(HttpMethod.ANY, path, () -> handler).filter(FilterType.BEFORE);
+    return add(HttpMethod.ALL, path, () -> handler).filter(FilterType.BEFORE);
   }
 
   public RouteBuilder after(String path, Handler handler) {
-    return add(HttpMethod.ANY, path, () -> handler).filter(FilterType.AFTER);
+    return add(HttpMethod.ALL, path, () -> handler).filter(FilterType.AFTER);
   }
 
   public RouteBuilder before(Class<? extends Handler> handler) {
@@ -128,11 +136,11 @@ public class Strudel {
   }
 
   public RouteBuilder before(String path, Class<? extends Handler> handler) {
-    return add(HttpMethod.ANY, path, () -> injector.getInstance(handler)).filter(FilterType.BEFORE);
+    return add(HttpMethod.ALL, path, () -> injector.getInstance(handler)).filter(FilterType.BEFORE);
   }
 
   public RouteBuilder after(String path, Class<? extends Handler> handler) {
-    return add(HttpMethod.ANY, path, () -> injector.getInstance(handler)).filter(FilterType.AFTER);
+    return add(HttpMethod.ALL, path, () -> injector.getInstance(handler)).filter(FilterType.AFTER);
   }
 
   public void exception(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {
@@ -184,7 +192,7 @@ public class Strudel {
     StaticFiles staticFiles = new StaticFiles(path, url);
     handler.setStaticFileConfig(staticFiles);
     url = enhanceUrl(url);
-    RouteBuilder builder = add(HttpMethod.ANY, url, () -> handler);
+    RouteBuilder builder = add(HttpMethod.ALL, url, () -> handler);
     return staticFiles.setRouteBuilder(builder);
   }
 
@@ -202,6 +210,9 @@ public class Strudel {
   public RouteBuilder add(HttpMethod method, String path, Supplier<Handler> handler) {
     checkStopped();
     RouteBuilder routeBuilder = new RouteBuilder().method(method).path(path).handler(handler);
+    if (method == HttpMethod.POST || method == HttpMethod.PUT) {
+      routeBuilder.async();//because of input stream parsing in undertow
+    }
     builders.add(routeBuilder);
     return routeBuilder;
   }

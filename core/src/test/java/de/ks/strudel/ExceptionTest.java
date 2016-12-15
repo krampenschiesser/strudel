@@ -34,7 +34,7 @@ public class ExceptionTest {
   @Test
   void exceptionThrowing() {
     AtomicBoolean called = new AtomicBoolean();
-    strudel.put("/exception", (request, response) -> {
+    strudel.get("/exception", (request, response) -> {
       throw new IllegalArgumentException("nene");
     });
     strudel.exception(IllegalArgumentException.class, (request, response) -> {
@@ -42,14 +42,29 @@ public class ExceptionTest {
     });
     strudel.start();
 
-    RestAssured.put("/exception").then().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
+    RestAssured.get("/exception").then().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
+    assertTrue(called.get());
+  }
+
+  @Test
+  void asyncExceptionThrowing() {
+    AtomicBoolean called = new AtomicBoolean();
+    strudel.get("/exception", (request, response) -> {
+      throw new IllegalArgumentException("nene");
+    }).async();
+    strudel.exception(IllegalArgumentException.class, (request, response) -> {
+      called.set(true);
+    });
+    strudel.start();
+
+    RestAssured.get("/exception").then().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
     assertTrue(called.get());
   }
 
   @Test
   void childException() {
     AtomicBoolean called = new AtomicBoolean();
-    strudel.put("/exception", (request, response) -> {
+    strudel.get("/exception", (request, response) -> {
       throw new IllegalThreadStateException("nene");
     });
     strudel.exception(IllegalArgumentException.class, (request, response) -> {
@@ -57,7 +72,7 @@ public class ExceptionTest {
     });
     strudel.start();
 
-    RestAssured.put("/exception").then().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
+    RestAssured.get("/exception").then().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
     assertTrue(called.get());
   }
 }

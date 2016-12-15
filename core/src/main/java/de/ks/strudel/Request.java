@@ -15,13 +15,23 @@
  */
 package de.ks.strudel;
 
+import io.undertow.connector.PooledByteBuffer;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
+import io.undertow.server.handlers.form.FormData;
+import io.undertow.server.handlers.form.FormDataParser;
+import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.PathTemplateMatch;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Request {
@@ -160,5 +170,58 @@ public class Request {
 
   public Locale getLocale() {
     return locale;
+  }
+
+  public byte[] bodyAsBytes() throws IOException {
+    exchange.startBlocking();
+    try (InputStream inputStream = exchange.getInputStream()) {
+      ByteArrayOutputStream bos = readToOutputStream(inputStream);
+      return bos.toByteArray();
+    }
+  }
+
+  public String body() throws IOException {
+    exchange.startBlocking();
+    try (InputStream inputStream = exchange.getInputStream()) {
+      ByteArrayOutputStream bos = readToOutputStream(inputStream);
+      String utf8 = StandardCharsets.UTF_8.displayName();
+      String charset = Optional.of(charset()).orElse(utf8);
+      try {
+        return bos.toString(charset);
+      } catch (UnsupportedEncodingException e) {
+        return bos.toString(utf8);
+      }
+    }
+  }
+
+  private ByteArrayOutputStream readToOutputStream(InputStream inputStream) throws IOException {
+    int size = contentLength() > 0 ? (int) contentLength() : 1024;
+    ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
+
+    try (PooledByteBuffer pooled = exchange.getConnection().getByteBufferPool().getArrayBackedPool().allocate()) {
+      ByteBuffer buf = pooled.getBuffer();
+      while (true) {
+        buf.clear();
+        int c = inputStream.read(buf.array(), buf.arrayOffset(), buf.remaining());
+        if (c == -1) {
+          break;
+        } else if (c != 0) {
+          buf.limit(c);
+          bos.write(buf.array(), buf.arrayOffset(), buf.limit());
+        }
+      }
+    }
+    return bos;
+  }
+
+  public FormData formData() throws IOException {
+    exchange.startBlocking();
+    FormDataParser parser = FormParserFactory.builder().build().createParser(exchange);
+    if (parser != null) {
+      FormData data = parser.parseBlocking();
+      return data;
+    } else {
+      return null;
+    }
   }
 }

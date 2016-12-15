@@ -93,7 +93,7 @@ public class Route {
   }
 
   public List<HttpString> getMethods() {
-    if (method == HttpMethod.ANY) {
+    if (method == HttpMethod.ALL) {
       return Arrays.asList(//
         HttpMethod.GET.getMethod(),//
         HttpMethod.PUT.getMethod(),//
