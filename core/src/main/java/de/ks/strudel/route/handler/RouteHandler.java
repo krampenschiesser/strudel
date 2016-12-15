@@ -15,6 +15,7 @@
  */
 package de.ks.strudel.route.handler;
 
+import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import de.ks.strudel.localization.LocaleResolver;
@@ -24,7 +25,10 @@ import de.ks.strudel.template.TemplateEngineResolver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
+import javax.inject.Provider;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Supplier;
 
 public class RouteHandler implements HttpHandler {
   private final Route route;
@@ -32,13 +36,17 @@ public class RouteHandler implements HttpHandler {
   private final ThreadLocal<Boolean> asyncRoute;
   private final TemplateEngineResolver templateEngineResolver;
   private final LocaleResolver localeResolver;
+  private final Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings;
+  private final Provider<Locale> localeProvider;
 
-  public RouteHandler(Route route, RequestScope requestScope, ThreadLocal<Boolean> asyncRoute, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver) {
+  public RouteHandler(Route route, RequestScope requestScope, ThreadLocal<Boolean> asyncRoute, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver, Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, Provider<Locale> localeProvider) {
     this.route = route;
     this.requestScope = requestScope;
     this.asyncRoute = asyncRoute;
     this.templateEngineResolver = templateEngineResolver;
     this.localeResolver = localeResolver;
+    this.exceptionMappings = exceptionMappings;
+    this.localeProvider = localeProvider;
   }
 
   @Override
@@ -48,12 +56,22 @@ public class RouteHandler implements HttpHandler {
 
     ExecuteAsAsyncHandler executeAsAsync = new ExecuteAsAsyncHandler(route, asyncRoute);
     RequestScopeHandler requestScopeHandler = new RequestScopeHandler(requestScope, localeResolver);
+    ExceptionHandler exceptionHandler = new ExceptionHandler(exceptionMappings, localeProvider);
     AsyncCallbackHandler asyncCallbackHandler = new AsyncCallbackHandler(route.getAsyncBefore(), route.getAsyncAfter(), request, response);
     RenderingAndExecutionHandler finalRouteHandler = new RenderingAndExecutionHandler(request, response, route, templateEngineResolver);
-    executeAsAsync.setNext(requestScopeHandler);
-    requestScopeHandler.setNext(asyncCallbackHandler);
-    asyncCallbackHandler.setNext(finalRouteHandler);
 
-    executeAsAsync.handleRequest(ex);
+    if (route.isAsync()) {
+      executeAsAsync.setNext(requestScopeHandler);
+      requestScopeHandler.setNext(exceptionHandler);
+      exceptionHandler.setNext(asyncCallbackHandler);
+      asyncCallbackHandler.setNext(finalRouteHandler);
+
+      executeAsAsync.handleRequest(ex);
+    } else {
+      requestScopeHandler.setNext(asyncCallbackHandler);
+      asyncCallbackHandler.setNext(finalRouteHandler);
+
+      requestScopeHandler.handleRequest(ex);
+    }
   }
 }

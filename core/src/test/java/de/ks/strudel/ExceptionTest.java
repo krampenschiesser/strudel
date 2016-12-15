@@ -38,7 +38,7 @@ public class ExceptionTest {
       throw new IllegalArgumentException("nene");
     });
     strudel.exception(IllegalArgumentException.class, (request, response) -> {
-      called.set(true);
+      called.set(!called.get());
     });
     strudel.start();
 
@@ -68,7 +68,7 @@ public class ExceptionTest {
       throw new IllegalThreadStateException("nene");
     });
     strudel.exception(IllegalArgumentException.class, (request, response) -> {
-      called.set(true);
+      called.set(!called.get());
     });
     strudel.start();
 

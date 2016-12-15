@@ -22,19 +22,19 @@ import io.undertow.server.RoutingHandler;
 
 import javax.inject.Provider;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class MainHandler implements HttpHandler {
 
   private final ThreadLocal<Boolean> asyncRoute;
-  private final ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings;
+  private final Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings;
   private final RoutingHandler before;
   private final RoutingHandler main;
   private final RoutingHandler after;
   private final Provider<Locale> localeProvider;
 
-  public MainHandler(ThreadLocal<Boolean> asyncRoute, ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, RoutingHandler before, RoutingHandler main, RoutingHandler after, Provider<Locale> localeProvider) {
+  public MainHandler(ThreadLocal<Boolean> asyncRoute, Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, RoutingHandler before, RoutingHandler main, RoutingHandler after, Provider<Locale> localeProvider) {
     this.asyncRoute = asyncRoute;
     this.exceptionMappings = exceptionMappings;
     this.before = before;

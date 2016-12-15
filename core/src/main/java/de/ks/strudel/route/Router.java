@@ -31,13 +31,14 @@ import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
+import io.undertow.util.CopyOnWriteMap;
 import io.undertow.util.Headers;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 @Singleton
@@ -50,12 +51,13 @@ public class Router {
     Predicates.maxContentSize(MTU));
   final RoutingHandler after;
   final HttpHandler mainHandler;
-  final ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings = new ConcurrentHashMap<>();
+  final Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings = new CopyOnWriteMap<>();
   final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
   final Injector injector;
   final RequestScope requestScope;
   final TemplateEngineResolver templateEngineResolver;
   final LocaleResolver localeResolver;
+  private final Provider<Locale> localeProvider;
 
   @Inject
   public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver, Provider<Locale> localeProvider) {
@@ -63,6 +65,7 @@ public class Router {
     this.requestScope = requestScope;
     this.templateEngineResolver = templateEngineResolver;
     this.localeResolver = localeResolver;
+    this.localeProvider = localeProvider;
 
     routing = Handlers.routing();
     before = Handlers.routing();
@@ -113,7 +116,7 @@ public class Router {
   }
 
   private HttpHandler createRouteHandler(Route route) {
-    return new RouteHandler(route, requestScope, asyncRoute, templateEngineResolver, localeResolver);
+    return new RouteHandler(route, requestScope, asyncRoute, templateEngineResolver, localeResolver, exceptionMappings, localeProvider);
   }
 
   public void addExceptionHandler(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {

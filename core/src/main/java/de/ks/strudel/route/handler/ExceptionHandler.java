@@ -26,14 +26,13 @@ import javax.inject.Provider;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 public class ExceptionHandler extends WrappingHandler {
-  private final ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings;
+  private final Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings;
   private final Provider<Locale> localeProvider;
 
-  public ExceptionHandler(ConcurrentHashMap<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, Provider<Locale> localeProvider) {
+  public ExceptionHandler(Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, Provider<Locale> localeProvider) {
     this.exceptionMappings = exceptionMappings;
     this.localeProvider = localeProvider;
   }
