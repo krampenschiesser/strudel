@@ -35,6 +35,7 @@ public class Route {
   private final FilterType filterType;
   private final HandlerNoReturn asyncBefore, asyncAfter;
   private final Class<? extends TemplateEngine> templateEngine;
+  private final boolean etag;
   private WebSocketConnectionCallback webSocketConnectionCallback;
 
   public Route(RouteBuilder routeBuilder) {
@@ -48,6 +49,7 @@ public class Route {
     asyncAfter = routeBuilder.asyncAfter;
     templateEngine = routeBuilder.engineClass;
     webSocketConnectionCallback = routeBuilder.webSocketConnectionCallback;
+    etag = routeBuilder.etag;
   }
 
   public Handler getHandler() {
@@ -105,6 +107,10 @@ public class Route {
 
   public boolean isWebsocket() {
     return webSocketConnectionCallback != null;
+  }
+
+  public boolean isEtag() {
+    return etag;
   }
 
   public WebSocketConnectionCallback getWebSocketConnectionCallback() {

@@ -29,7 +29,10 @@ public abstract class StaticFileHandler implements Handler {
 
   public void setStaticFileConfig(StaticFiles staticFiles) {
     this.staticFiles = staticFiles;
-    resource = Handlers.resource(createResourceManager(staticFiles));
+
+    ResourceManager resourceManager = createResourceManager(staticFiles);
+//    CachingResourceManager cached = new CachingResourceManager(500, 500000, new DirectBufferCache(100, 100, 500000), resourceManager, -1);
+    resource = Handlers.resource(resourceManager);
   }
 
   protected abstract ResourceManager createResourceManager(StaticFiles staticFiles);

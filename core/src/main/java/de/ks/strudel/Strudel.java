@@ -151,12 +151,12 @@ public class Strudel {
     return addStaticFiles(externalFolder, path, folderFileHandlerProvider.get());
   }
 
-  public void webjars() {
-    webjars("/webjars");
+  public RouteBuilder webjars() {
+    return webjars("/webjars");
   }
 
-  public void webjars(String path) {
-    classpathLocation("META-INF/resources/webjars/", path).getRouteBuilder().gzip();
+  public RouteBuilder webjars(String path) {
+    return classpathLocation("META-INF/resources/webjars/", path).getRouteBuilder().gzip();
   }
 
   public void websocket(String path, @Nullable OnWebSocketOpen openCallback, Supplier<AbstractReceiveListener> listener) {

@@ -34,6 +34,7 @@ public class RouteBuilder {
   HandlerNoReturn asyncBefore, asyncAfter;
   Class<? extends TemplateEngine> engineClass;
   WebSocketConnectionCallback webSocketConnectionCallback;
+  boolean etag;
 
   public RouteBuilder path(String path) {
     this.path = path;
@@ -105,6 +106,10 @@ public class RouteBuilder {
     return this;
   }
 
+  //  public RouteBuilder cacheEtag() {
+//    this.etag=true;
+//    return this;
+//  }
   public Route build() {
     if (filterType == FilterType.BEFORE && async) {
       throw new IllegalStateException("Before-filters are not allowed to be asynchronous!");
@@ -116,4 +121,5 @@ public class RouteBuilder {
     this.webSocketConnectionCallback = webSocketConnectionCallback;
     return this;
   }
+
 }

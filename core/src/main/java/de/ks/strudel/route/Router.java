@@ -87,12 +87,18 @@ public class Router {
   public void addRoute(Route route) {
     HttpHandler httpHandler;
 
+//    CacheHandler cacheHandler = new CacheHandler(new DirectBufferCache(100, 100, 10000));
+    HttpHandler routeHandler = createRouteHandler(route);
+//    if (route.isEtag()) {
+//      cacheHandler.setNext(routeHandler);
+//      routeHandler = cacheHandler;
+//    }
     if (route.isGzip()) {
-      httpHandler = wrapInGzipHandler(createRouteHandler(route));
+      httpHandler = wrapInGzipHandler(routeHandler);
     } else if (route.isWebsocket()) {
       httpHandler = Handlers.websocket(route.getWebSocketConnectionCallback());
     } else {
-      httpHandler = createRouteHandler(route);
+      httpHandler = routeHandler;
     }
 
     RoutingHandler currentRoutingHandler;
