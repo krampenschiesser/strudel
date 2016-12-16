@@ -220,6 +220,7 @@ The locale of a request is resolved in 3 ways:
 A request like this http://localhost/?lang=de will switch to german language
 . I look for a cookie with the with the name *lang* and use its value as language
 . I check for the *Accept-Language* Http-Header and use the main language
+. If I still don't have a locale, English is used
 
 The first language returned by any of these 3 checks will be used.
 So as a developer you can quickly view a page in a different language.
@@ -302,13 +303,11 @@ Integration of http://www.webjars.org/[webjars] is very simple but not enabled b
 strudel.webjars();
 
 
-=== Guice integration
-
-==== Request scope
+=== Request scope
 
 I implemented a request scope that lets you inject the current *Request*, *Response* and *Locale* into your beans.
 
-
+TIP: See example link:examples/src/main/java/de/ks/strudel/guice/scope/MyBean.java[*RequestScopeExample*]
 
 == Template enines
 
