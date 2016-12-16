@@ -15,7 +15,7 @@ Why copy it? +
 . I always ended up adding basic features like decent Locale support and a RequestScope
 
 
-TIP: All code snippets in this readme have working examples in the examples folder that you can run view.
+TIP: All code snippets in this readme have working examples in the examples folder that you can run and view.
 
 == Hello World
 
