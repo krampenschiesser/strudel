@@ -32,11 +32,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Request {
   final HttpServerExchange exchange;
   final Locale locale;
+  final AtomicReference<String> body = new AtomicReference<>();
+  final AtomicReference<byte[]> bodyBytes = new AtomicReference<>();
+  final AtomicReference<FormData> formData = new AtomicReference<>();
 
   protected Request() {
     exchange = null;
@@ -173,21 +178,29 @@ public class Request {
   }
 
   public byte[] bodyAsBytes() throws IOException {
+    if (bodyBytes.get() != null) {
+      return bodyBytes.get();
+    }
     exchange.startBlocking();
     try (InputStream inputStream = exchange.getInputStream()) {
       ByteArrayOutputStream bos = readToOutputStream(inputStream);
-      return bos.toByteArray();
+      bodyBytes.set(bos.toByteArray());
+      return bodyBytes.get();
     }
   }
 
   public String body() throws IOException {
+    if (body.get() != null) {
+      return body.get();
+    }
     exchange.startBlocking();
     try (InputStream inputStream = exchange.getInputStream()) {
       ByteArrayOutputStream bos = readToOutputStream(inputStream);
       String utf8 = StandardCharsets.UTF_8.displayName();
       String charset = Optional.of(charset()).orElse(utf8);
       try {
-        return bos.toString(charset);
+        this.body.set(bos.toString(charset));
+        return body.get();
       } catch (UnsupportedEncodingException e) {
         return bos.toString(utf8);
       }
@@ -214,12 +227,32 @@ public class Request {
     return bos;
   }
 
+  public String formData(String key) throws IOException {
+    FormData data = formData();
+    FormData.FormValue value = data.getFirst(key);
+    return value == null ? null : value.getValue();
+  }
+
+  public Path formDataFile(String key) throws IOException {
+    FormData data = formData();
+    FormData.FormValue value = data.getFirst(key);
+    if (value == null || !value.isFile()) {
+      return null;
+    } else {
+      return value.getPath();
+    }
+  }
+
   public FormData formData() throws IOException {
+    if (formData.get() != null) {
+      return formData.get();
+    }
     exchange.startBlocking();
     FormDataParser parser = FormParserFactory.builder().build().createParser(exchange);
     if (parser != null) {
       FormData data = parser.parseBlocking();
-      return data;
+      formData.set(data);
+      return formData.get();
     } else {
       return null;
     }
