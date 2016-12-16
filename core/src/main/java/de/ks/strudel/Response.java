@@ -88,6 +88,11 @@ public class Response {
     return exchange.getResponseHeaders();
   }
 
+  public Response contentType(String type) {
+    exchange.getResponseHeaders().add(Headers.CONTENT_TYPE, type);
+    return this;
+  }
+
   public long contentLength() {
     return exchange.getResponseContentLength();
   }
@@ -126,4 +131,5 @@ public class Response {
   public boolean isResponseChannelAvailable() {
     return exchange.isResponseChannelAvailable();
   }
+
 }
