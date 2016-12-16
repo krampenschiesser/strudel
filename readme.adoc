@@ -239,6 +239,33 @@ strudel.post("/post", (request, response) -> {
   }
 });
 
+
+=== Websockets
+
+Websockets work via the undertow internal websocket api.
+This is not the greatest of them all but it works.
+I might wrap it in the future.
+However I do not want to use the JSR356 API sind I don't want to use reflection to parse given classes.
+
+Registering a websocket:
+[source,java]
+strudel.websocket("/echo", null, Listener::new);
+
+The first argument is a listener that is called when the websocket is opened.
+You can use it to associate a channel with eg. a user.
+The second argument is a factory for the listener used on that specific channel.
+In our echo example we don't need to handle the open of the connection.
+We just reflect incoming messages with our *Listener*:
+
+[source,java]
+static class Listener extends AbstractReceiveListener {
+  @Override
+  protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) throws IOException {
+    WebSockets.sendText("Server says: " + message.getData(), channel, null);
+  }
+}
+
+
 === Guice integration
 
 

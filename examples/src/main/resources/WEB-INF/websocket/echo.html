@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple echo client</title>
+
+  <script>
+      var socket;
+      if (window.WebSocket) {
+          socket = new WebSocket("ws://localhost:4567/echo");
+          socket.onmessage = function (event) {
+              var chat = document.getElementById('echo');
+              chat.innerHTML = chat.innerHTML + event.data + "<br />";
+          };
+      } else {
+          alert("Your browser does not support Websockets. (Use Chrome)");
+      }
+
+      function send(message) {
+          if (!window.WebSocket) {
+              return false;
+          }
+          if (socket.readyState == WebSocket.OPEN) {
+              socket.send(message);
+          } else {
+              alert("The socket is not open.");
+          }
+          return false;
+      }
+  </script>
+</head>
+<body>
+<h1>Chat window:</h1>
+<div id="echo"></div>
+<br />
+<h1>Send data to server:</h1>
+<form onsubmit="return false;" class="chatform" action="">
+  <label for="msg">Message</label>
+  <input type="text" name="message" id="msg" onkeypress="if(event.keyCode==13) { send(this.form.message.value); this.value='' } " />
+</form>
+
+</body>
+</html>
