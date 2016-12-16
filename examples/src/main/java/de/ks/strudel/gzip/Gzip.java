@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.gzip.hello;
+package de.ks.strudel.gzip;
 
 import de.ks.strudel.Strudel;
 

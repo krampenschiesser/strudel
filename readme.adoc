@@ -67,6 +67,8 @@ Strudel::
     second.start();
 ----
 
+TIP: See example link:examples/src/main/java/de/ks/strudel/multipleinstance/MultipleInstances.java[*MultipleInstances*]
+
 ---
 
 Spark::
@@ -97,7 +99,7 @@ Or maybe you implement a custom guice scope that acts like a cache and can be cl
 [source.java]
 strudel.get("/", MyHandler.class);
 
-TIP: See example *simpledi*
+TIP: See example link:examples/src/main/java/de/ks/strudel/simpledi/SimpleDI.java[*SimpleDI*]
 
 == User guide
 
@@ -120,6 +122,9 @@ strudel.get("/user/{name}/page/{page}", (request, response) -> {
   return "Parameter route: user=" + name + ", page=" + page;
 });
 ----
+
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/simpleroutes/SimpleRoutes.java[*SimpleRoutes*]
 
 === Customizing routes
 
@@ -152,6 +157,8 @@ The following routes are synchronous and run in the *IO thread*:
 
 * GET/DELETE routes
 
+TIP: See example link:examples/src/main/java/de/ks/strudel/async/AsyncGet.java[*AsyncGet*]
+
 === Filters
 
 You can add filters that are executed before and after route calls:
@@ -179,12 +186,17 @@ the *RouteBuilder*:
 [source,java]
 strudel.get("/async", (request, response) -> "i am async").async(before, after);
 
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/filter/Filter.java[*Filter*]
+
 === Redirects
 
 Redirecting is simple and can be done via the *Response*:
 [source,java]
 strudel.get("/",(request, response) -> response.redirect("/target"));
 strudel.get("/target", (request, response) -> "You were redirected");
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/redirect/Redirect.java[*Redirect*]
 
 === Gzip support
 
@@ -197,6 +209,8 @@ strudel.get("/zip", (request, response) -> longString + "<br/>\nI am zipped!").g
 
 Please note that only above a certain content-length (1480) I start to
 zip the content.
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/gzip/Gzip.java[*Gzip*]
 
 === Locale parsing
 
@@ -215,11 +229,15 @@ As a visitor the page is shown to you with your browsers default language.
 The locale is resolved with the class *LocaleResolver* feel free to replace it in your
 guice module with a custom implementation.
 
+TIP: See example link:examples/src/main/java/de/ks/strudel/template/DefaultTemplateEngine.java[*DefaultTemplateEngine*]
+
 === Reading PUT/POST body
 
 Reading a put/post body is done via the *Request*:
 [source,java]
 strudel.post("/post", (request, response) -> "You submitted the following body: <br/>\n" + request.body());
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/postbody/Postbody.java[*Postbody*]
 
 === Reading FormData
 
@@ -229,6 +247,8 @@ strudel.post("/post", (request, response) -> {
   String value = request.formData("text");
   return "You submitted value: <b>" + value + "</b>";
 });
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/formdata/Formdata.java[*Formdata*]
 
 === Handling file uploads
 
@@ -246,6 +266,7 @@ strudel.post("/post", (request, response) -> {
   }
 });
 
+TIP: See example link:examples/src/main/java/de/ks/strudel/fileupload/Fileupload.java[*Fileupload*]
 
 === Websockets
 
@@ -271,6 +292,8 @@ static class Listener extends AbstractReceiveListener {
     WebSockets.sendText("Server says: " + message.getData(), channel, null);
   }
 }
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/websocket/EchoServer.java[*EchoServer*]
 
 === Webjars
 
@@ -446,6 +469,9 @@ public class Templating {
 <a href="?lang=de">Click for switch to german</a>
 </body>
 </html>
+
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/template/DefaultTemplateEngine.java[*DefaultTemplateEngine*]
 
 === Defaults of the template engines (classpath, locale)
 
