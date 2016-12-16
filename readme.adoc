@@ -322,6 +322,23 @@ compile "de.ks.strudel:strudel-json-jackson:$strudelversion"
 
 TIP: See example link:examples/src/main/java/de/ks/strudel/rest/RestServer.java[*RestServer*]
 
+Consuming JSON is also easy.
+You can always inject the parser itself and go from there:
+[source,java]
+.MyHandler.java
+----
+@Inject
+JsonParser parser;
+
+public void parse(String input) {
+    MyPojo object = parser.fromString(input, MyPojo.class);
+    ...
+}
+----
+Or if you just have the simple case of turning the message body into an object:
+[source,java]
+MyPojo myPojo = request.bodyFromJson(MyPojo.class);
+
 === Request scope
 
 I implemented a request scope that lets you inject the current *Request*, *Response* and *Locale* into your beans.

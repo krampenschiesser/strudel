@@ -62,8 +62,13 @@ public class JSonParserTest {
 
   static class MyJsonParser implements JsonParser {
     @Override
-    public String parse(Object object) {
+    public String toString(Object object) {
       return new Gson().toJson(object);
+    }
+
+    @Override
+    public <T> T fromString(String input, Class<T> clazz) throws Exception {
+      return null;
     }
   }
 }

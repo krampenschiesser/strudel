@@ -31,7 +31,12 @@ public class JacksonParser implements JsonParser {
   }
 
   @Override
-  public String parse(Object object) throws Exception {
+  public String toString(Object object) throws Exception {
     return objectMapper.writeValueAsString(object);
+  }
+
+  @Override
+  public <T> T fromString(String input, Class<T> clazz) throws Exception {
+    return objectMapper.readValue(input, clazz);
   }
 }

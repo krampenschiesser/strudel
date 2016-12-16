@@ -31,7 +31,12 @@ public class GsonParser implements JsonParser {
   }
 
   @Override
-  public String parse(Object object) {
+  public String toString(Object object) {
     return gson.toJson(object);
+  }
+
+  @Override
+  public <T> T fromString(String input, Class<T> clazz) throws Exception {
+    return gson.fromJson(input, clazz);
   }
 }

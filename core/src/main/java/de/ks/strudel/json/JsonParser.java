@@ -15,7 +15,8 @@
  */
 package de.ks.strudel.json;
 
-@FunctionalInterface
 public interface JsonParser {
-  String parse(Object object) throws Exception;
+  String toString(Object object) throws Exception;
+
+  <T> T fromString(String input, Class<T> clazz) throws Exception;
 }

@@ -29,16 +29,17 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 
+import javax.inject.Provider;
 import java.nio.ByteBuffer;
 
 public class RenderingAndExecutionHandler implements HttpHandler {
-  private final Request request;
-  private final Response response;
+  private final Provider<Request> request;
+  private final Provider<Response> response;
   private final Route route;
   private final TemplateEngineResolver templateEngineResolver;
   private final JsonResolver jsonResolver;
 
-  public RenderingAndExecutionHandler(Request request, Response response, Route route, TemplateEngineResolver templateEngineResolver, JsonResolver jsonResolver) {
+  public RenderingAndExecutionHandler(Provider<Request> request, Provider<Response> response, Route route, TemplateEngineResolver templateEngineResolver, JsonResolver jsonResolver) {
     this.request = request;
     this.response = response;
     this.route = route;
@@ -48,11 +49,11 @@ public class RenderingAndExecutionHandler implements HttpHandler {
 
   @Override
   public void handleRequest(HttpServerExchange ex) throws Exception {
-    Object retval = route.getHandler().handle(request, response);
+    Object retval = route.getHandler().handle(request.get(), response.get());
     if (route.isParseAsJson()) {
       JsonParser jsonParser = jsonResolver.getJsonParser(route.getJsonParser());
       ex.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-      retval = jsonParser.parse(retval);
+      retval = jsonParser.toString(retval);
     }
     if (route.getTemplateEngine() != null) {
       retval = renderTemplate(retval);

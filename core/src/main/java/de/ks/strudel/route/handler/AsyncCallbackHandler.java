@@ -21,14 +21,15 @@ import de.ks.strudel.Response;
 import io.undertow.server.HttpServerExchange;
 
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 
 public class AsyncCallbackHandler extends WrappingHandler {
   private final HandlerNoReturn asyncBefore;
   private final HandlerNoReturn asyncAfter;
-  private final Request request;
-  private final Response response;
+  private final Provider<Request> request;
+  private final Provider<Response> response;
 
-  public AsyncCallbackHandler(@Nullable HandlerNoReturn asyncBefore, @Nullable HandlerNoReturn asyncAfter, Request request, Response response) {
+  public AsyncCallbackHandler(@Nullable HandlerNoReturn asyncBefore, @Nullable HandlerNoReturn asyncAfter, Provider<Request> request, Provider<Response> response) {
     this.asyncBefore = asyncBefore;
     this.asyncAfter = asyncAfter;
     this.request = request;
@@ -38,7 +39,7 @@ public class AsyncCallbackHandler extends WrappingHandler {
   @Override
   protected boolean before(HttpServerExchange exchange) throws Exception {
     if (asyncBefore != null) {
-      asyncBefore.handle(request, response);
+      asyncBefore.handle(request.get(), response.get());
     }
     return true;
   }
@@ -46,7 +47,7 @@ public class AsyncCallbackHandler extends WrappingHandler {
   @Override
   protected void after(HttpServerExchange exchange) throws Exception {
     if (asyncAfter != null) {
-      asyncAfter.handle(request, response);
+      asyncAfter.handle(request.get(), response.get());
     }
   }
 }

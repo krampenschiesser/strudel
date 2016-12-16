@@ -15,6 +15,8 @@
  */
 package de.ks.strudel;
 
+import de.ks.strudel.json.JsonParser;
+import de.ks.strudel.json.JsonResolver;
 import io.undertow.connector.PooledByteBuffer;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
@@ -39,6 +41,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Request {
   final HttpServerExchange exchange;
   final Locale locale;
+  final JsonResolver jsonResolver;
+  final Class<? extends JsonParser> preferredParser;
   final AtomicReference<String> body = new AtomicReference<>();
   final AtomicReference<byte[]> bodyBytes = new AtomicReference<>();
   final AtomicReference<FormData> formData = new AtomicReference<>();
@@ -46,11 +50,15 @@ public class Request {
   protected Request() {
     exchange = null;
     locale = null;
+    jsonResolver = null;
+    preferredParser = null;
   }
 
-  public Request(HttpServerExchange exchange, Locale locale) {
+  public Request(HttpServerExchange exchange, Locale locale, JsonResolver jsonResolver, Class<? extends JsonParser> preferredParser) {
     this.exchange = exchange;
     this.locale = locale;
+    this.jsonResolver = jsonResolver;
+    this.preferredParser = preferredParser;
   }
 
   public HttpServerExchange getExchange() {
@@ -187,6 +195,20 @@ public class Request {
       bodyBytes.set(bos.toByteArray());
       return bodyBytes.get();
     }
+  }
+
+  public <T> T bodyFromJson(Class<T> clazz) throws Exception {
+    return bodyFromJson(clazz, preferredParser != null ? preferredParser : JsonParser.class);
+  }
+
+  public <T> T bodyFromJson(Class<T> clazz, Class<? extends JsonParser> parser) throws Exception {
+    if (jsonResolver == null) {
+      throw new IllegalStateException("You are in error handling, no parser available to parse the request body");
+    }
+    String body = body();
+    JsonParser jsonParser = jsonResolver.getJsonParser(parser);
+    T retval = jsonParser.fromString(body, clazz);
+    return retval;
   }
 
   public String body() throws IOException {

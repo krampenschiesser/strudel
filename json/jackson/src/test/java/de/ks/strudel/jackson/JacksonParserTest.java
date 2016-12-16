@@ -1,5 +1,7 @@
 package de.ks.strudel.jackson;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.MediaType;
 import com.google.inject.AbstractModule;
 import de.ks.strudel.Strudel;
@@ -38,6 +40,24 @@ class JacksonParserTest {
                .body("age", equalTo(30));
   }
 
+  @Test
+  void receiveParsing() throws JsonProcessingException {
+    strudel.post("/", (request, response) -> {
+      MyPojo myPojo = request.bodyFromJson(MyPojo.class);
+      return myPojo;
+    }).json();
+
+    strudel.start();
+
+    String json = new ObjectMapper().writeValueAsString(new MyPojo("hello", 41));
+    RestAssured.given().body(json)//
+               .post("/").then()//
+               .statusCode(200)//
+               .contentType(MediaType.JSON_UTF_8.type())//
+               .body("name", equalTo("hello"))//
+               .body("age", equalTo(41));
+  }
+
   static class TestModule extends AbstractModule {
     @Override
     protected void configure() {
@@ -49,6 +69,10 @@ class JacksonParserTest {
   static class MyPojo {
     String name;
     int age;
+
+    protected MyPojo() {
+      //jackson
+    }
 
     public MyPojo(String name, int age) {
       this.name = name;

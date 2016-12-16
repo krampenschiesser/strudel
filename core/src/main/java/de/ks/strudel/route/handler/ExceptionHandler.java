@@ -68,7 +68,7 @@ public class ExceptionHandler extends WrappingHandler {
     }
     if (handler != null) {
       Locale locale = safeGetLocale();
-      handler.handle(new Request(exchange, locale), new Response(exchange));
+      handler.handle(new Request(exchange, locale, null, null), new Response(exchange));
       if (!exchange.isResponseStarted() && exchange.getStatusCode() == 200) {
         exchange.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.getValue());
       }

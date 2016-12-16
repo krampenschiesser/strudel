@@ -17,6 +17,8 @@ package de.ks.strudel.route.handler;
 
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.json.JsonParser;
+import de.ks.strudel.json.JsonResolver;
 import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.scope.RequestScope;
 import io.undertow.server.HttpServerExchange;
@@ -26,16 +28,20 @@ import java.util.Locale;
 public class RequestScopeHandler extends WrappingHandler {
   private final RequestScope requestScope;
   private final LocaleResolver localeResolver;
+  private final JsonResolver jsonResolver;
+  private final Class<? extends JsonParser> jsonParser;
 
-  public RequestScopeHandler(RequestScope requestScope, LocaleResolver localeResolver) {
+  public RequestScopeHandler(RequestScope requestScope, LocaleResolver localeResolver, JsonResolver jsonResolver, Class<? extends JsonParser> jsonParser) {
     this.requestScope = requestScope;
     this.localeResolver = localeResolver;
+    this.jsonResolver = jsonResolver;
+    this.jsonParser = jsonParser;
   }
 
   @Override
   protected boolean before(HttpServerExchange ex) {
     Locale locale = localeResolver.getLocale(ex);
-    Request request = new Request(ex, locale);
+    Request request = new Request(ex, locale, jsonResolver, jsonParser);
     Response response = new Response(ex);
     requestScope.enter(request, response, locale);
     return true;

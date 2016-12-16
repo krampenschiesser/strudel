@@ -1,6 +1,7 @@
 package de.ks.strudel.gson;
 
 import com.google.common.net.MediaType;
+import com.google.gson.Gson;
 import com.google.inject.AbstractModule;
 import de.ks.strudel.Strudel;
 import de.ks.strudel.json.JsonParser;
@@ -36,6 +37,24 @@ class GsonParserTest {
                .contentType(MediaType.JSON_UTF_8.type())//
                .body("name", equalTo("me"))//
                .body("age", equalTo(30));
+  }
+
+  @Test
+  void receiveParsing() {
+    strudel.post("/", (request, response) -> {
+      MyPojo myPojo = request.bodyFromJson(MyPojo.class);
+      return myPojo;
+    }).json();
+
+    strudel.start();
+
+    String json = new Gson().toJson(new MyPojo("hello", 41));
+    RestAssured.given().body(json)//
+               .post("/").then()//
+               .statusCode(200)//
+               .contentType(MediaType.JSON_UTF_8.type())//
+               .body("name", equalTo("hello"))//
+               .body("age", equalTo(41));
   }
 
   static class TestModule extends AbstractModule {

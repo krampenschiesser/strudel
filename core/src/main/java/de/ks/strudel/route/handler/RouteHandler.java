@@ -15,6 +15,7 @@
  */
 package de.ks.strudel.route.handler;
 
+import com.google.inject.Key;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
@@ -54,11 +55,11 @@ public class RouteHandler implements HttpHandler {
 
   @Override
   public void handleRequest(HttpServerExchange ex) throws Exception {
-    Request request = new Request(ex, Locale.ENGLISH);
-    Response response = new Response(ex);
+    Provider<Request> request = () -> requestScope.scope(Key.get(Request.class), null).get();
+    Provider<Response> response = () -> requestScope.scope(Key.get(Response.class), null).get();
 
     ExecuteAsAsyncHandler executeAsAsync = new ExecuteAsAsyncHandler(route, asyncRoute);
-    RequestScopeHandler requestScopeHandler = new RequestScopeHandler(requestScope, localeResolver);
+    RequestScopeHandler requestScopeHandler = new RequestScopeHandler(requestScope, localeResolver, jsonResolver, route.getJsonParser());
     ExceptionHandler exceptionHandler = new ExceptionHandler(exceptionMappings, localeProvider);
     AsyncCallbackHandler asyncCallbackHandler = new AsyncCallbackHandler(route.getAsyncBefore(), route.getAsyncAfter(), request, response);
     RenderingAndExecutionHandler finalRouteHandler = new RenderingAndExecutionHandler(request, response, route, templateEngineResolver, jsonResolver);
