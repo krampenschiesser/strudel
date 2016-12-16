@@ -17,6 +17,7 @@ package de.ks.strudel.route;
 
 import de.ks.strudel.Handler;
 import de.ks.strudel.HandlerNoReturn;
+import de.ks.strudel.json.JsonParser;
 import de.ks.strudel.template.TemplateEngine;
 import io.undertow.websockets.WebSocketConnectionCallback;
 
@@ -35,6 +36,7 @@ public class RouteBuilder {
   Class<? extends TemplateEngine> engineClass;
   WebSocketConnectionCallback webSocketConnectionCallback;
   boolean etag;
+  Class<? extends JsonParser> jsonParser;
 
   public RouteBuilder path(String path) {
     this.path = path;
@@ -103,6 +105,11 @@ public class RouteBuilder {
     this.engineClass = engineClass;
     async();
     gzip();
+    return this;
+  }
+
+  public RouteBuilder json(Class<? extends JsonParser> parserClass) {
+    this.jsonParser = parserClass;
     return this;
   }
 

@@ -17,6 +17,8 @@ package de.ks.strudel.route.handler;
 
 import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.json.JsonParser;
+import de.ks.strudel.json.JsonResolver;
 import de.ks.strudel.route.Route;
 import de.ks.strudel.route.Router;
 import de.ks.strudel.template.ModelAndView;
@@ -34,17 +36,24 @@ public class RenderingAndExecutionHandler implements HttpHandler {
   private final Response response;
   private final Route route;
   private final TemplateEngineResolver templateEngineResolver;
+  private final JsonResolver jsonResolver;
 
-  public RenderingAndExecutionHandler(Request request, Response response, Route route, TemplateEngineResolver templateEngineResolver) {
+  public RenderingAndExecutionHandler(Request request, Response response, Route route, TemplateEngineResolver templateEngineResolver, JsonResolver jsonResolver) {
     this.request = request;
     this.response = response;
     this.route = route;
     this.templateEngineResolver = templateEngineResolver;
+    this.jsonResolver = jsonResolver;
   }
 
   @Override
   public void handleRequest(HttpServerExchange ex) throws Exception {
     Object retval = route.getHandler().handle(request, response);
+    if (route.isParseAsJson()) {
+      JsonParser jsonParser = jsonResolver.getJsonParser(route.getJsonParser());
+      ex.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+      retval = jsonParser.parse(retval);
+    }
     if (route.getTemplateEngine() != null) {
       retval = renderTemplate(retval);
     }

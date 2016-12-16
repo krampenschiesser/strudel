@@ -27,7 +27,7 @@ public class ServerManagerTest {
     Options options = new Options().port(0);//any
     RequestScope scope = Mockito.mock(RequestScope.class);
     LocaleResolver localeResolver = Mockito.mock(LocaleResolver.class);
-    Router router = new Router(null, scope, null, localeResolver, null);
+    Router router = new Router(null, scope, null, localeResolver, null, null);
     router.addRoute(new RouteBuilder().get().path("/hello").handler(() -> (request, response) -> GREETING).build());
     serverManager = new ServerManager(options, router);
     serverManager.start();

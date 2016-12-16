@@ -17,6 +17,7 @@ package de.ks.strudel.route;
 
 import com.google.inject.Injector;
 import de.ks.strudel.HandlerNoReturn;
+import de.ks.strudel.json.JsonResolver;
 import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.route.handler.MainHandler;
 import de.ks.strudel.route.handler.RouteHandler;
@@ -57,14 +58,16 @@ public class Router {
   final RequestScope requestScope;
   final TemplateEngineResolver templateEngineResolver;
   final LocaleResolver localeResolver;
+  private final JsonResolver jsonResolver;
   private final Provider<Locale> localeProvider;
 
   @Inject
-  public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver, Provider<Locale> localeProvider) {
+  public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver, JsonResolver jsonResolver, Provider<Locale> localeProvider) {
     this.injector = injector;
     this.requestScope = requestScope;
     this.templateEngineResolver = templateEngineResolver;
     this.localeResolver = localeResolver;
+    this.jsonResolver = jsonResolver;
     this.localeProvider = localeProvider;
 
     routing = Handlers.routing();
@@ -116,7 +119,7 @@ public class Router {
   }
 
   private HttpHandler createRouteHandler(Route route) {
-    return new RouteHandler(route, requestScope, asyncRoute, templateEngineResolver, localeResolver, exceptionMappings, localeProvider);
+    return new RouteHandler(route, requestScope, asyncRoute, templateEngineResolver, jsonResolver, localeResolver, exceptionMappings, localeProvider);
   }
 
   public void addExceptionHandler(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {
