@@ -1,12 +1,17 @@
 = Strudel micro web framework
 :toc:
 
+WARNING: I am currently waiting for my
+https://github.com/undertow-io/undertow/commit/33a8ce4496efae246fccdb24974e1bd7b42c6104[wildcard route commit]
+to be merged into one of the release branches of undertow and make it into a release.
+When this is done I can finally release strudel otherwise wildcards would not be supported.
+
 Strudel is heavily inspired by the http://http://sparkjava.com/[Sparkjava] framework, well it is basically a copy.
 Why copy it? +
 
 . The static model was troublesome closing a lot of doors
 . I had trouble extending it or changing configurations like TemplateEngines
-. I wanted to play around with the cool kid http://underow.io[undertow]
+. I wanted to play around with the cool kid http://undertow.io[undertow]
 . I always ended up adding basic features like decent Locale support and a RequestScope
 
 
@@ -33,6 +38,8 @@ Injector injector = Guice.createInjector(new StrudelModule());
 Strudel strudel = injector.getInstance(Strudel.class);
 strudel.get("/", (request, response) -> "hello sauerland!");
 strudel.start();
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/hello/HelloWorld.java[*HelloWorld*]
 
 == What are the major differences between spark and strudel
 
@@ -273,6 +280,10 @@ strudel.webjars();
 
 
 === Guice integration
+
+==== Request scope
+
+I implemented a request scope that lets you inject the current *Request*, *Response* and *Locale* into your beans.
 
 
 
