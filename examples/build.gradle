@@ -4,4 +4,7 @@ dependencies {
     compile project (":templateengines:strudel-template-handlebars")
     compile project (":json:strudel-json-gson")
     compile project (":json:strudel-json-jackson")
+
+    runtime "ch.qos.logback:logback-core:$logback"
+    runtime "ch.qos.logback:logback-classic:$logback"
 }
