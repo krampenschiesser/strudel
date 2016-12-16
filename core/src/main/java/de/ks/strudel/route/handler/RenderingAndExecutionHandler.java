@@ -24,7 +24,10 @@ import de.ks.strudel.template.TemplateEngine;
 import de.ks.strudel.template.TemplateEngineResolver;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
+
+import java.nio.ByteBuffer;
 
 public class RenderingAndExecutionHandler implements HttpHandler {
   private final Request request;
@@ -46,13 +49,25 @@ public class RenderingAndExecutionHandler implements HttpHandler {
       retval = renderTemplate(retval);
     }
     if (retval != null) {
-      String data = String.valueOf(retval);
-      int length = data.getBytes().length;
-      if (length < Router.MTU) {
-        ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, length);//workaround, for some reason undertow doesn't always set this
+      if (retval instanceof byte[]) {
+        @SuppressWarnings("unchecked")
+        byte[] bytes = (byte[]) retval;
+        if (ex.getRequestHeaders().get(Headers.CONTENT_LENGTH) == null) {
+          ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, bytes.length);
+        }
+        ex.getResponseSender().send(ByteBuffer.wrap(bytes));
+      } else {
+        String data = String.valueOf(retval);
+        int length = data.getBytes().length;
+        if (length < Router.MTU) {
+          ex.getResponseHeaders().add(Headers.CONTENT_LENGTH, length);//workaround, for some reason undertow doesn't always set this
+        }
+        HeaderValues headerValues = ex.getResponseHeaders().get(Headers.CONTENT_TYPE);
+        if (headerValues == null || headerValues.isEmpty()) {
+          ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
+        }
+        ex.getResponseSender().send(data, new NoCompletionCallback());
       }
-      ex.getResponseHeaders().add(Headers.CONTENT_TYPE, "text/html;charset=utf-8");
-      ex.getResponseSender().send(data, new NoCompletionCallback());
     }
   }
 
