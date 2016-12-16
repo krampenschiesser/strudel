@@ -22,11 +22,20 @@ public class Options {
   private int port = 4567;
   private String host = "0.0.0.0";
 
-
+  /**
+   * @return the configured host adress
+   */
   public String host() {
     return host;
   }
 
+  /**
+   * Assigns the bind adress for starting the host on. Default is 0.0.0.0 which means all adresses.
+   * This is important on a clustered environment when a server switch happens.
+   *
+   * @param host the adress
+   * @return self
+   */
   public Options host(String host) {
     this.host = host;
     return this;
@@ -41,7 +50,7 @@ public class Options {
     return port;
   }
 
-  public Options secure(String keystoreFile, String keystorePassword, String truststoreFile, String truststorePassword) {
-    return this;
-  }
+//  public Options secure(String keystoreFile, String keystorePassword, String truststoreFile, String truststorePassword) {
+//    return this;
+//  }
 }

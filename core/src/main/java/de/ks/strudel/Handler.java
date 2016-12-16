@@ -19,5 +19,16 @@ import de.ks.strudel.request.Request;
 
 @FunctionalInterface
 public interface Handler {
+  /**
+   * Handle a request
+   *
+   * @param request  same instance as in the {@link de.ks.strudel.scope.RequestScope}
+   * @param response same instance as in the {@link de.ks.strudel.scope.RequestScope
+   * @return null
+   * {@link de.ks.strudel.template.ModelAndView} if it is a template
+   * byte[] to serve an image, make sure you set the contet-type correctly
+   * or any object which will be represented as toString
+   * @throws Exception ...
+   */
   Object handle(Request request, Response response) throws Exception;
 }

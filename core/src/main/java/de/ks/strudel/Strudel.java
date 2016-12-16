@@ -39,8 +39,32 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * The main interface for configuring you micro web server.
+ * Use the following to setup some routes:
+ * <pre>
+ * strudel.get("/get", (request, response) -> "get");
+ * strudel.put("/put", (request, response) -> "put");
+ * strudel.post("/post", (request, response) -> "post");
+ * strudel.delete("/delete", (request, response) -> "delete");
+ *
+ * strudel.get("/wild/*", (request, response) -> "Wildcard route: " + request.routeWildcard());
+ *
+ * strudel.get("/user/{name}/page/{page}", (request, response) -> {
+ *   String name = request.routeParameter("name");
+ *   String page = request.routeParameter("page");
+ *   return "Parameter route: user=" + name + ", page=" + page;
+ * });
+ * </pre>
+ */
 @Singleton
 public class Strudel {
+  /**
+   * Creates a guice injector and resolves a new instance of Strudel
+   *
+   * @param modules pass in additional modules like template engines or json parser
+   * @return a new instance of strudel
+   */
   public static Strudel create(Module... modules) {
     ArrayList<Module> all = new ArrayList<>();
     all.addAll(Arrays.asList(modules));
@@ -51,11 +75,11 @@ public class Strudel {
 
   final Options options;
   final Router router;
-  private final ServerManager serverManager;
-  private final Provider<ClassPathFileHandler> classPathFileHandlerProvider;
-  private final Provider<FolderFileHandler> folderFileHandlerProvider;
-  private final List<RouteBuilder> builders = new ArrayList<>();
-  private final Injector injector;
+  final ServerManager serverManager;
+  final Provider<ClassPathFileHandler> classPathFileHandlerProvider;
+  final Provider<FolderFileHandler> folderFileHandlerProvider;
+  final List<RouteBuilder> builders = new ArrayList<>();
+  final Injector injector;
 
   @Inject
   public Strudel(Injector injector, Options options, Router router, ServerManager serverManager, Provider<ClassPathFileHandler> classPathFileHandlerProvider, Provider<FolderFileHandler> folderFileHandlerProvider) {
@@ -175,8 +199,7 @@ public class Strudel {
 
   public void websocket(String path, @Nullable OnWebSocketOpen openCallback, Supplier<AbstractReceiveListener> listener) {
     WebSocketConnectionCallback callback = new WebSocketConnectionCallback() {
-      @Override
-      public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel) {
+      @Override public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel) {
         if (openCallback != null) {
           openCallback.accept(exchange, channel);
         }

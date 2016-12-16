@@ -27,6 +27,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * Immutable descriptor of a route.
+ */
 public class Route {
   private final Supplier<Handler> handler;
   private final HttpMethod method;
@@ -38,7 +41,7 @@ public class Route {
   private final Class<? extends TemplateEngine> templateEngine;
   private final boolean etag;
   private final Class<? extends JsonParser> jsonParser;
-  private WebSocketConnectionCallback webSocketConnectionCallback;
+  private final WebSocketConnectionCallback webSocketConnectionCallback;
 
   public Route(RouteBuilder routeBuilder) {
     handler = routeBuilder.handler;

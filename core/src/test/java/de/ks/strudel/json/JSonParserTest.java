@@ -18,6 +18,7 @@ package de.ks.strudel.json;
 import com.google.common.net.MediaType;
 import com.google.gson.Gson;
 import de.ks.strudel.Strudel;
+import de.ks.strudel.route.HttpStatus;
 import de.ks.strudel.util.StrudelTestExtension;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import javax.inject.Inject;
 import java.util.*;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(StrudelTestExtension.class)
@@ -35,8 +37,7 @@ public class JSonParserTest {
   @Inject
   Strudel strudel;
 
-  @Test
-  void returnJson() {
+  @Test void returnJson() {
     strudel.get("/", (request, response) -> new MyPojo()).json(MyJsonParser.class);
     strudel.start();
 
@@ -47,6 +48,15 @@ public class JSonParserTest {
     response.then()//
             .body("list", equalTo(Arrays.asList("Hello", "World")))//
             .body("data.hello", equalTo("World"));
+  }
+
+  @Test void returnNull() {
+    strudel.get("/", (request, response) -> null).json(MyJsonParser.class);
+    strudel.start();
+    Response response = RestAssured.get("/");
+    response.then().statusCode(HttpStatus.NO_CONTENT.getValue());
+
+    assertThat(response.body().asString()).isEmpty();
   }
 
   static class MyPojo {
@@ -61,13 +71,11 @@ public class JSonParserTest {
   }
 
   static class MyJsonParser implements JsonParser {
-    @Override
-    public String toString(Object object) {
+    @Override public String toString(Object object) {
       return new Gson().toJson(object);
     }
 
-    @Override
-    public <T> T fromString(String input, Class<T> clazz) throws Exception {
+    @Override public <T> T fromString(String input, Class<T> clazz) throws Exception {
       return null;
     }
   }

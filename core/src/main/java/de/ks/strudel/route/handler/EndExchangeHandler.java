@@ -18,6 +18,9 @@ package de.ks.strudel.route.handler;
 import de.ks.strudel.route.HttpStatus;
 import io.undertow.server.HttpServerExchange;
 
+/**
+ * At the end of a synchronous call we set error 404 and end the exchange
+ */
 public class EndExchangeHandler extends WrappingHandler {
   private final ThreadLocal<Boolean> asyncRoute;
 
@@ -25,13 +28,11 @@ public class EndExchangeHandler extends WrappingHandler {
     this.asyncRoute = asyncRoute;
   }
 
-  @Override
-  protected boolean before(HttpServerExchange exchange) throws Exception {
+  @Override protected boolean before(HttpServerExchange exchange) throws Exception {
     return true;
   }
 
-  @Override
-  protected void after(HttpServerExchange exchange) throws Exception {
+  @Override protected void after(HttpServerExchange exchange) throws Exception {
     if (!asyncRoute.get()) {
       boolean inProgress = (exchange.isResponseStarted() || exchange.isDispatched());
       if (!inProgress && exchange.getStatusCode() == 200) {

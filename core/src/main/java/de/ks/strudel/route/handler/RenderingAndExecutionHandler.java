@@ -19,6 +19,7 @@ import de.ks.strudel.Response;
 import de.ks.strudel.json.JsonParser;
 import de.ks.strudel.json.JsonResolver;
 import de.ks.strudel.request.Request;
+import de.ks.strudel.route.HttpStatus;
 import de.ks.strudel.route.Route;
 import de.ks.strudel.route.Router;
 import de.ks.strudel.template.ModelAndView;
@@ -32,6 +33,12 @@ import io.undertow.util.Headers;
 import javax.inject.Provider;
 import java.nio.ByteBuffer;
 
+/**
+ * The handler that finally does some stuff.
+ * It creates an instance of the handler of a route and executes it.
+ * The retval might be parsed to json if required or used to render a template.
+ * Additionally the exchange.send method is invoked
+ */
 public class RenderingAndExecutionHandler implements HttpHandler {
   private final Provider<Request> request;
   private final Provider<Response> response;
@@ -47,13 +54,17 @@ public class RenderingAndExecutionHandler implements HttpHandler {
     this.jsonResolver = jsonResolver;
   }
 
-  @Override
-  public void handleRequest(HttpServerExchange ex) throws Exception {
+  @Override public void handleRequest(HttpServerExchange ex) throws Exception {
     Object retval = route.getHandler().handle(request.get(), response.get());
     if (route.isParseAsJson()) {
-      JsonParser jsonParser = jsonResolver.getJsonParser(route.getJsonParser());
-      ex.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-      retval = jsonParser.toString(retval);
+      if (retval == null) {
+        ex.setStatusCode(HttpStatus.NO_CONTENT.getValue());
+        retval = "";
+      } else {
+        JsonParser jsonParser = jsonResolver.getJsonParser(route.getJsonParser());
+        ex.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        retval = jsonParser.toString(retval);
+      }
     }
     if (route.getTemplateEngine() != null) {
       retval = renderTemplate(retval);

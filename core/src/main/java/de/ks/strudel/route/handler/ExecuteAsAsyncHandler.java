@@ -18,6 +18,9 @@ package de.ks.strudel.route.handler;
 import de.ks.strudel.route.Route;
 import io.undertow.server.HttpServerExchange;
 
+/**
+ * Dispatches a itself to the worker thread
+ */
 public class ExecuteAsAsyncHandler extends WrappingHandler {
 
   private final Route route;
@@ -28,8 +31,7 @@ public class ExecuteAsAsyncHandler extends WrappingHandler {
     this.asyncRoute = asyncRoute;
   }
 
-  @Override
-  protected boolean before(HttpServerExchange ex) {
+  @Override protected boolean before(HttpServerExchange ex) {
     if (route.isAsync() && ex.isInIoThread()) {
       asyncRoute.set(true);
       ex.dispatch(this);
@@ -39,8 +41,7 @@ public class ExecuteAsAsyncHandler extends WrappingHandler {
     }
   }
 
-  @Override
-  protected void after(HttpServerExchange exchange) {
+  @Override protected void after(HttpServerExchange exchange) {
 
   }
 }

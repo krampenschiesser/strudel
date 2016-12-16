@@ -15,6 +15,9 @@
  */
 package de.ks.strudel.template;
 
+/**
+ * Wrapper for single return value
+ */
 public class ModelAndView {
   private final Object model;
   private final String templateName;

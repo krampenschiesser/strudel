@@ -25,6 +25,9 @@ import io.undertow.server.HttpServerExchange;
 
 import java.util.Locale;
 
+/**
+ * Starts and stops the request scope.
+ */
 public class RequestScopeHandler extends WrappingHandler {
   private final RequestScope requestScope;
   private final LocaleResolver localeResolver;
@@ -38,8 +41,7 @@ public class RequestScopeHandler extends WrappingHandler {
     this.formParser = formParser;
   }
 
-  @Override
-  protected boolean before(HttpServerExchange ex) {
+  @Override protected boolean before(HttpServerExchange ex) {
     Locale locale = localeResolver.getLocale(ex);
     Request request = new Request(ex, locale, bodyParser, formParser);
     Response response = new Response(ex);
@@ -47,8 +49,7 @@ public class RequestScopeHandler extends WrappingHandler {
     return true;
   }
 
-  @Override
-  protected void after(HttpServerExchange exchange) {
+  @Override protected void after(HttpServerExchange exchange) {
     requestScope.exit();
   }
 }

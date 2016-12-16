@@ -17,6 +17,7 @@ package de.ks.strudel.route;
 
 import com.google.inject.Injector;
 import de.ks.strudel.HandlerNoReturn;
+import de.ks.strudel.Strudel;
 import de.ks.strudel.json.JsonResolver;
 import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.route.handler.MainHandler;
@@ -42,6 +43,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * Big behemoth handling registering the routes after {@link Strudel#start()}
+ * Need to simplify this
+ */
 @Singleton
 public class Router {
   public static final int MTU = 1480;
@@ -61,8 +66,7 @@ public class Router {
   private final JsonResolver jsonResolver;
   private final Provider<Locale> localeProvider;
 
-  @Inject
-  public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver, JsonResolver jsonResolver, Provider<Locale> localeProvider) {
+  @Inject public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver, JsonResolver jsonResolver, Provider<Locale> localeProvider) {
     this.injector = injector;
     this.requestScope = requestScope;
     this.templateEngineResolver = templateEngineResolver;

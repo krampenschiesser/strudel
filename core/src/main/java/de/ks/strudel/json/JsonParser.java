@@ -15,6 +15,9 @@
  */
 package de.ks.strudel.json;
 
+/**
+ * Interface all json parsers have to fulfill
+ */
 public interface JsonParser {
   String toString(Object object) throws Exception;
 

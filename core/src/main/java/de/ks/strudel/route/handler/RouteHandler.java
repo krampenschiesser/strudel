@@ -34,6 +34,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * A handler for each registered route.
+ * Switching the thread is not allowed anymore at this point.
+ * It starts the request scope, the async before/after callbacks  and executes the final rendering handler.
+ */
 public class RouteHandler implements HttpHandler {
   private final Route route;
   private final RequestScope requestScope;
@@ -55,8 +60,7 @@ public class RouteHandler implements HttpHandler {
     this.localeProvider = localeProvider;
   }
 
-  @Override
-  public void handleRequest(HttpServerExchange ex) throws Exception {
+  @Override public void handleRequest(HttpServerExchange ex) throws Exception {
     Provider<Request> request = () -> requestScope.scope(Key.get(Request.class), null).get();
     Provider<Response> response = () -> requestScope.scope(Key.get(Response.class), null).get();
 

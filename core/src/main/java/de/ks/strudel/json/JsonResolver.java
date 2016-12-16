@@ -19,11 +19,13 @@ import com.google.inject.Injector;
 
 import javax.inject.Inject;
 
+/**
+ * Wrapper around the injector to limit the classes I am able to resolve
+ */
 public class JsonResolver {
   private final Injector injector;
 
-  @Inject
-  public JsonResolver(Injector injector) {
+  @Inject public JsonResolver(Injector injector) {
     this.injector = injector;
   }
 

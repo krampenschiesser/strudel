@@ -23,6 +23,10 @@ import io.undertow.Handlers;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.server.handlers.resource.ResourceManager;
 
+/**
+ * Base class for static file handlers.
+ * The main difference for undertow is the different ResourceManager which is created by subclasses
+ */
 public abstract class StaticFileHandler implements Handler {
   private StaticFiles staticFiles;
   private ResourceHandler resource;
@@ -37,8 +41,7 @@ public abstract class StaticFileHandler implements Handler {
 
   protected abstract ResourceManager createResourceManager(StaticFiles staticFiles);
 
-  @Override
-  public Object handle(Request request, Response response) throws Exception {
+  @Override public Object handle(Request request, Response response) throws Exception {
     String url = staticFiles.getUrl();
 
     String relativePath = request.getExchange().getRelativePath();

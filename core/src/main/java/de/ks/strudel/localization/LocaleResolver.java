@@ -22,7 +22,20 @@ import io.undertow.util.Headers;
 import java.util.Deque;
 import java.util.Locale;
 
+/**
+ * Resolves the locale to use for a request.
+ * See below at {@link #getLocale(HttpServerExchange)}
+ */
 public class LocaleResolver {
+  /**
+   * Parses the locale from the request.
+   * 1. by query parameter: /?lang=de
+   * 2. by cookie: lang=de
+   * 3. by http header accept_locale
+   *
+   * @param exchange ex
+   * @return the resolved locale, default is english
+   */
   public Locale getLocale(HttpServerExchange exchange) {
     Locale byParameter = getLocaleFromParameter(exchange);
     if (byParameter != null) {

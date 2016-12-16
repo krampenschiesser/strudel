@@ -18,9 +18,11 @@ package de.ks.strudel;
 import com.google.inject.AbstractModule;
 import de.ks.strudel.scope.ScopeModule;
 
+/**
+ * General module for strudel, nothing interesting here
+ */
 public class StrudelModule extends AbstractModule {
-  @Override
-  protected void configure() {
+  @Override protected void configure() {
     install(new ScopeModule());
   }
 }

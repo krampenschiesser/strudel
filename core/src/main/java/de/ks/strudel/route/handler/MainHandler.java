@@ -25,6 +25,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * Wrapper that is active over the lifecycle of the application
+ * Provides a basic facade around the 3 routing handlers: before, main after.
+ */
 public class MainHandler implements HttpHandler {
 
   private final ThreadLocal<Boolean> asyncRoute;
@@ -43,8 +47,7 @@ public class MainHandler implements HttpHandler {
     this.localeProvider = localeProvider;
   }
 
-  @Override
-  public void handleRequest(HttpServerExchange exchange) throws Exception {
+  @Override public void handleRequest(HttpServerExchange exchange) throws Exception {
     AsyncRouteHandler asyncRouteHandler = new AsyncRouteHandler(asyncRoute);
     EndExchangeHandler endExchangeHandler = new EndExchangeHandler(asyncRoute);
     ExceptionHandler exceptionHandler = new ExceptionHandler(exceptionMappings, localeProvider);

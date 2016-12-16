@@ -23,6 +23,9 @@ import io.undertow.server.HttpServerExchange;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 
+/**
+ * Used to execute async before/after callbacks around a handler
+ */
 public class AsyncCallbackHandler extends WrappingHandler {
   private final HandlerNoReturn asyncBefore;
   private final HandlerNoReturn asyncAfter;
@@ -36,16 +39,14 @@ public class AsyncCallbackHandler extends WrappingHandler {
     this.response = response;
   }
 
-  @Override
-  protected boolean before(HttpServerExchange exchange) throws Exception {
+  @Override protected boolean before(HttpServerExchange exchange) throws Exception {
     if (asyncBefore != null) {
       asyncBefore.handle(request.get(), response.get());
     }
     return true;
   }
 
-  @Override
-  protected void after(HttpServerExchange exchange) throws Exception {
+  @Override protected void after(HttpServerExchange exchange) throws Exception {
     if (asyncAfter != null) {
       asyncAfter.handle(request.get(), response.get());
     }

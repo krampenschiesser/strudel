@@ -23,6 +23,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Used to start/stop and configure undertow
+ */
 @Singleton
 public class ServerManager {
   final Options options;
@@ -30,8 +33,7 @@ public class ServerManager {
 
   final AtomicReference<Undertow> undertowRef = new AtomicReference<>();
 
-  @Inject
-  public ServerManager(Options options, Router router) {
+  @Inject public ServerManager(Options options, Router router) {
     this.options = options;
     this.router = router;
   }

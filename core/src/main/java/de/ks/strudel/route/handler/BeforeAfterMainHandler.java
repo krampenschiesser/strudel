@@ -19,6 +19,9 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.RoutingHandler;
 
+/**
+ * Executes before/after filters
+ */
 public class BeforeAfterMainHandler implements HttpHandler {
   private final RoutingHandler before;
   private final RoutingHandler main;
@@ -32,8 +35,7 @@ public class BeforeAfterMainHandler implements HttpHandler {
     this.asyncRoute = asyncRoute;
   }
 
-  @Override
-  public void handleRequest(HttpServerExchange exchange) throws Exception {
+  @Override public void handleRequest(HttpServerExchange exchange) throws Exception {
     before.handleRequest(exchange);
     if (!exchange.isComplete()) {
       main.handleRequest(exchange);

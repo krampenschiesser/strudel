@@ -19,11 +19,13 @@ import com.google.inject.Injector;
 
 import javax.inject.Inject;
 
+/**
+ * Wrapper around injector to limit access
+ */
 public class TemplateEngineResolver {
   private final Injector injector;
 
-  @Inject
-  public TemplateEngineResolver(Injector injector) {
+  @Inject public TemplateEngineResolver(Injector injector) {
     this.injector = injector;
   }
 

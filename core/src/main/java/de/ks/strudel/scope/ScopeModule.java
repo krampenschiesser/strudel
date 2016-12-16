@@ -33,8 +33,8 @@ public class ScopeModule extends AbstractModule {
     bind(RequestScope.class).toInstance(requestScope);
     bind(Request.class).in(requestScope);
     bind(Response.class).in(requestScope);
-//    bind(Locale.class).in(requestScope);
-//    bind(HttpServerExchange.class).in(requestScope);
+//    bind(Locale.class).in(requestScope); fucking final class
+//    bind(HttpServerExchange.class).in(requestScope); sadly impossible too
   }
 
   @Provides

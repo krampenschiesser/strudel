@@ -27,13 +27,13 @@ public class StaticFiles {
     this.url = url;
   }
 
-  public StaticFiles cached() {
-    return this;
-  }
-
-  public StaticFiles header(String key, String value) {
-    return this;
-  }
+//  public StaticFiles cached() {
+//    return this;
+//  }
+//
+//  public StaticFiles header(String key, String value) {
+//    return this;
+//  }
 
   public String getLocation() {
     return location;

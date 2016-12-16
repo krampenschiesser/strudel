@@ -20,6 +20,9 @@ import io.undertow.websockets.spi.WebSocketHttpExchange;
 
 import java.util.function.BiConsumer;
 
+/**
+ * Called during open of a new socket connection in a websocket
+ */
 @FunctionalInterface
 public interface OnWebSocketOpen extends BiConsumer<WebSocketHttpExchange, WebSocketChannel> {
 }
