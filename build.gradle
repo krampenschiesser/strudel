@@ -11,7 +11,7 @@ buildscript {
 }
 
 allprojects {
-    group "de.ks"
+    group "de.ks.strudel"
     version "0.1-SNAPSHOT"
 
     apply plugin: "java"

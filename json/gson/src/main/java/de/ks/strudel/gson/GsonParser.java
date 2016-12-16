@@ -13,9 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.json;
+package de.ks.strudel.gson;
 
-@FunctionalInterface
-public interface JsonParser {
-  String parse(Object object) throws Exception;
+import com.google.gson.Gson;
+import de.ks.strudel.json.JsonParser;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
+public class GsonParser implements JsonParser {
+  private final Gson gson;
+
+  @Inject
+  public GsonParser(Gson gson) {
+    this.gson = gson;
+  }
+
+  @Override
+  public String parse(Object object) {
+    return gson.toJson(object);
+  }
 }

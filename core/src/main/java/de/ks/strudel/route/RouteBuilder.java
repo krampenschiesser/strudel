@@ -108,6 +108,10 @@ public class RouteBuilder {
     return this;
   }
 
+  public RouteBuilder json() {
+    return json(JsonParser.class);
+  }
+
   public RouteBuilder json(Class<? extends JsonParser> parserClass) {
     this.jsonParser = parserClass;
     return this;

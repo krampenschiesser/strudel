@@ -1,6 +1,10 @@
 dependencies {
-    compile "org.freemarker:freemarker:$freemarker"
+    compile "com.fasterxml.jackson.core:jackson-core:$jackson"
+    compile "com.fasterxml.jackson.core:jackson-databind:$jackson"
+
     compile project(":strudel-core")
+
+    runtime "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.8.5"
 }
 
 task sourceJar(type: Jar) {

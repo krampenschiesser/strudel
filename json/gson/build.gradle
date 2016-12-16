@@ -1,5 +1,6 @@
 dependencies {
-    compile "org.freemarker:freemarker:$freemarker"
+
+    compile "com.google.code.gson:gson:$gson"
     compile project(":strudel-core")
 }
 

@@ -13,9 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.json;
+package de.ks.strudel.gson;
 
-@FunctionalInterface
-public interface JsonParser {
-  String parse(Object object) throws Exception;
+import com.google.gson.Gson;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+
+public class GsonModule extends AbstractModule {
+  @Override
+  protected void configure() {
+
+  }
+
+  @Provides
+  public Gson getGson() {
+    return new Gson();
+  }
 }

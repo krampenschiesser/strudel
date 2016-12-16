@@ -13,9 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.json;
+package de.ks.strudel.jackson;
 
-@FunctionalInterface
-public interface JsonParser {
-  String parse(Object object) throws Exception;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+
+public class JacksonModule extends AbstractModule {
+  @Override
+  protected void configure() {
+
+  }
+
+  @Provides
+  public ObjectMapper getJackson() {
+    return new ObjectMapper();
+  }
 }
