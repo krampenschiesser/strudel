@@ -111,20 +111,26 @@ public class Strudel {
     return add(HttpMethod.DELETE, path, () -> handler);
   }
 
-  public RouteBuilder before(Handler handler) {
+  public RouteBuilder before(HandlerNoReturn handler) {
     return before("/*", handler);
   }
 
-  public RouteBuilder after(Handler handler) {
+  public RouteBuilder after(HandlerNoReturn handler) {
     return after("/*", handler);
   }
 
-  public RouteBuilder before(String path, Handler handler) {
-    return add(HttpMethod.ALL, path, () -> handler).filter(FilterType.BEFORE);
+  public RouteBuilder before(String path, HandlerNoReturn handler) {
+    return add(HttpMethod.ALL, path, () -> (request, response) -> {
+      handler.handle(request, response);
+      return null;
+    }).filter(FilterType.BEFORE);
   }
 
-  public RouteBuilder after(String path, Handler handler) {
-    return add(HttpMethod.ALL, path, () -> handler).filter(FilterType.AFTER);
+  public RouteBuilder after(String path, HandlerNoReturn handler) {
+    return add(HttpMethod.ALL, path, () -> (request, response) -> {
+      handler.handle(request, response);
+      return null;
+    }).filter(FilterType.AFTER);
   }
 
   public RouteBuilder before(Class<? extends Handler> handler) {

@@ -37,7 +37,6 @@ public class FilterTest {
   void filterBefore() {
     strudel.before("/secure/*", (request, response) -> {
       response.halt(HttpStatus.FORBIDDEN);
-      return null;
     });
     strudel.get("/secure/bla", (request, response) -> "Should not be visible!");
     strudel.start();
@@ -54,7 +53,6 @@ public class FilterTest {
 
     strudel.after((request, response) -> {
       called.set(true);
-      return null;
     });
     strudel.get("/secure/bla", (request, response) -> RESPONSE);
     strudel.start();
