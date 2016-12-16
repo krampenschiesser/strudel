@@ -74,7 +74,7 @@ TIP: See example link:examples/src/main/java/de/ks/strudel/multipleinstance/Mult
 Spark::
 Requests are always handled by separate thread. (Servlet based)
 Strudel::
-Relying heavily on undertow we can dispatch tasks to be executed async while also
+Relying heavily on undertow I can dispatch tasks to be executed async while also
 being able to serve tasks synchronously in the same thread.
 [source,java]
 ----
@@ -135,6 +135,7 @@ Current customizations are:
 * _sync()_ to execute this route in the IO thread
 * _gzip()_ to zip the content
 * _template()_ to mark the route as a template route
+* _json()_ to return json from this route
 
 === What is sync/async
 
@@ -147,7 +148,7 @@ TIP: in fact there are multiple IO threads, but if you block one of them it is a
 
 The following routes are asynchronous by default and run in *worker threads*:
 
-* PUT/POST because we need to enter blocking mode and read from the input stream
+* PUT/POST because I need to enter blocking mode and read from the input stream
 * template routes
 * classpath routes
 * external folder routes
@@ -302,6 +303,24 @@ Integration of http://www.webjars.org/[webjars] is very simple but not enabled b
 [source,java]
 strudel.webjars();
 
+=== Json
+
+A Rest endpoint providing json is made via calling the *json()* method on the *RouteBuilder*
+[source,java]
+strudel.get("/", (request, response) -> new MyPojo("Hans Wurst GSon", 42)).json();
+strudel.get("/jackson", (request, response) -> new MyPojo("Hans Wurst Jackson", 42)).json(JacksonParser.class);
+
+You can even specify which json engine to use (Gson for small answers, Jackson for big answers).
+Currently there are 2 json parsers:
+
+* GSon
+[source,gradle]
+compile "de.ks.strudel:strudel-json-gson:$strudelversion"
+* Jackson
+[source,gradle]
+compile "de.ks.strudel:strudel-json-jackson:$strudelversion"
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/rest/RestServer.java[*RestServer*]
 
 === Request scope
 
@@ -315,31 +334,31 @@ Strudel has build in support for multiple template engines:
 
 * http://freemarker.org/[freemarker]
 [source,gradle]
-compile "de.ks:strudel-template-freemarker:$strudelversion"
+compile "de.ks.strudel:strudel-template-freemarker:$strudelversion"
 
 * https://github.com/jknack/handlebars.java[handlebars]
 [source,gradle]
-compile "de.ks:strudel-template-handlebars:$strudelversion"
+compile "de.ks.strudel:strudel-template-handlebars:$strudelversion"
 
 * https://github.com/neuland/jade4j[jade]
 [source,gradle]
-compile "de.ks:strudel-template-jade:$strudelversion"
+compile "de.ks.strudel:strudel-template-jade:$strudelversion"
 
 * https://github.com/spullara/mustache.java[mustache]
 [source,gradle]
-compile "de.ks:strudel-template-mustache:$strudelversion"
+compile "de.ks.strudel:strudel-template-mustache:$strudelversion"
 
 * http://www.mitchellbosecke.com/pebble/home[pebble]
 [source,gradle]
-compile "de.ks:strudel-template-pebble:$strudelversion"
+compile "de.ks.strudel:strudel-template-pebble:$strudelversion"
 
 * http://www.thymeleaf.org/[thymeleaf] (3.0)
 [source,gradle]
-compile "de.ks:strudel-template-thymeleaf:$strudelversion"
+compile "de.ks.strudel:strudel-template-thymeleaf:$strudelversion"
 
 * http://trimou.org/[trimou]
 [source,gradle]
-compile "de.ks:strudel-template-trimou:$strudelversion"
+compile "de.ks.strudel:strudel-template-trimou:$strudelversion"
 
 I also would love to include https://github.com/fizzed/rocker[rocker] which is the fastest engine
 with a really nice approach. But sadly it is strongly based on maven and javaagents.
