@@ -15,10 +15,10 @@
  */
 package de.ks.strudel.route.handler;
 
-import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import de.ks.strudel.json.JsonParser;
 import de.ks.strudel.json.JsonResolver;
+import de.ks.strudel.request.Request;
 import de.ks.strudel.route.Route;
 import de.ks.strudel.route.Router;
 import de.ks.strudel.template.ModelAndView;

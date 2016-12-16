@@ -16,8 +16,8 @@
 package de.ks.strudel.scope;
 
 import com.google.inject.*;
-import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.request.Request;
 
 import java.util.HashMap;
 import java.util.Locale;

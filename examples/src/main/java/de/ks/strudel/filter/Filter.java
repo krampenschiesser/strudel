@@ -16,8 +16,8 @@
 package de.ks.strudel.filter;
 
 import de.ks.strudel.HandlerNoReturn;
-import de.ks.strudel.Request;
 import de.ks.strudel.Strudel;
+import de.ks.strudel.request.Request;
 import de.ks.strudel.route.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

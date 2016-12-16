@@ -16,8 +16,8 @@
 package de.ks.strudel.guice.scope;
 
 import de.ks.strudel.Handler;
-import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.request.Request;
 
 import javax.inject.Inject;
 import java.util.Locale;

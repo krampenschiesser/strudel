@@ -13,52 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel;
+package de.ks.strudel.request;
 
 import de.ks.strudel.json.JsonParser;
-import de.ks.strudel.json.JsonResolver;
-import io.undertow.connector.PooledByteBuffer;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.form.FormData;
-import io.undertow.server.handlers.form.FormDataParser;
-import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.PathTemplateMatch;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Request {
   final HttpServerExchange exchange;
   final Locale locale;
-  final JsonResolver jsonResolver;
-  final Class<? extends JsonParser> preferredParser;
-  final AtomicReference<String> body = new AtomicReference<>();
-  final AtomicReference<byte[]> bodyBytes = new AtomicReference<>();
-  final AtomicReference<FormData> formData = new AtomicReference<>();
+  final RequestBodyParser bodyParser;
+  final RequestFormParser formParser;
 
   protected Request() {
+    bodyParser = null;
+    formParser = null;
     exchange = null;
     locale = null;
-    jsonResolver = null;
-    preferredParser = null;
   }
 
-  public Request(HttpServerExchange exchange, Locale locale, JsonResolver jsonResolver, Class<? extends JsonParser> preferredParser) {
+  public Request(HttpServerExchange exchange, Locale locale, RequestBodyParser bodyParser, RequestFormParser formParser) {
     this.exchange = exchange;
     this.locale = locale;
-    this.jsonResolver = jsonResolver;
-    this.preferredParser = preferredParser;
+    this.bodyParser = bodyParser;
+    this.formParser = formParser;
   }
 
   public HttpServerExchange getExchange() {
@@ -186,97 +173,30 @@ public class Request {
   }
 
   public byte[] bodyAsBytes() throws IOException {
-    if (bodyBytes.get() != null) {
-      return bodyBytes.get();
-    }
-    exchange.startBlocking();
-    try (InputStream inputStream = exchange.getInputStream()) {
-      ByteArrayOutputStream bos = readToOutputStream(inputStream);
-      bodyBytes.set(bos.toByteArray());
-      return bodyBytes.get();
-    }
+    return bodyParser.bodyAsBytes();
   }
 
   public <T> T bodyFromJson(Class<T> clazz) throws Exception {
-    return bodyFromJson(clazz, preferredParser != null ? preferredParser : JsonParser.class);
+    return bodyParser.bodyFromJson(clazz);
   }
 
   public <T> T bodyFromJson(Class<T> clazz, Class<? extends JsonParser> parser) throws Exception {
-    if (jsonResolver == null) {
-      throw new IllegalStateException("You are in error handling, no parser available to parse the request body");
-    }
-    String body = body();
-    JsonParser jsonParser = jsonResolver.getJsonParser(parser);
-    T retval = jsonParser.fromString(body, clazz);
-    return retval;
+    return bodyParser.bodyFromJson(clazz, parser);
   }
 
   public String body() throws IOException {
-    if (body.get() != null) {
-      return body.get();
-    }
-    exchange.startBlocking();
-    try (InputStream inputStream = exchange.getInputStream()) {
-      ByteArrayOutputStream bos = readToOutputStream(inputStream);
-      String utf8 = StandardCharsets.UTF_8.displayName();
-      String charset = Optional.of(charset()).orElse(utf8);
-      try {
-        this.body.set(bos.toString(charset));
-        return body.get();
-      } catch (UnsupportedEncodingException e) {
-        return bos.toString(utf8);
-      }
-    }
-  }
-
-  private ByteArrayOutputStream readToOutputStream(InputStream inputStream) throws IOException {
-    int size = contentLength() > 0 ? (int) contentLength() : 1024;
-    ByteArrayOutputStream bos = new ByteArrayOutputStream(size);
-
-    try (PooledByteBuffer pooled = exchange.getConnection().getByteBufferPool().getArrayBackedPool().allocate()) {
-      ByteBuffer buf = pooled.getBuffer();
-      while (true) {
-        buf.clear();
-        int c = inputStream.read(buf.array(), buf.arrayOffset(), buf.remaining());
-        if (c == -1) {
-          break;
-        } else if (c != 0) {
-          buf.limit(c);
-          bos.write(buf.array(), buf.arrayOffset(), buf.limit());
-        }
-      }
-    }
-    return bos;
+    return bodyParser.body();
   }
 
   public String formData(String key) throws IOException {
-    FormData data = formData();
-    FormData.FormValue value = data.getFirst(key);
-    return value == null ? null : value.getValue();
+    return formParser.formData(key);
   }
 
   public Path formDataFile(String key) throws IOException {
-    FormData data = formData();
-    FormData.FormValue value = data.getFirst(key);
-    if (value == null || !value.isFile()) {
-      return null;
-    } else {
-      return value.getPath();
-    }
+    return formParser.formDataFile(key);
   }
 
   public FormData formData() throws IOException {
-    if (formData.get() != null) {
-      return formData.get();
-    }
-    exchange.startBlocking();
-    FormDataParser parser = FormParserFactory.builder().build().createParser(exchange);
-    if (parser != null) {
-      FormData data = parser.parseBlocking();
-      formData.set(data);
-      return formData.get();
-    } else {
-      return null;
-    }
+    return formParser.formData();
   }
 }

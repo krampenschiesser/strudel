@@ -1,10 +1,10 @@
 package de.ks.strudel.server;
 
 import com.google.inject.Key;
-import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.option.Options;
+import de.ks.strudel.request.Request;
 import de.ks.strudel.route.RouteBuilder;
 import de.ks.strudel.route.Router;
 import de.ks.strudel.scope.RequestScope;

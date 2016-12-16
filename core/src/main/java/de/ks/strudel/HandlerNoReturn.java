@@ -15,6 +15,8 @@
  */
 package de.ks.strudel;
 
+import de.ks.strudel.request.Request;
+
 @FunctionalInterface
 public interface HandlerNoReturn {
   void handle(Request request, Response response) throws Exception;

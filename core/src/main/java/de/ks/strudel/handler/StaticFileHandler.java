@@ -16,9 +16,9 @@
 package de.ks.strudel.handler;
 
 import de.ks.strudel.Handler;
-import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import de.ks.strudel.StaticFiles;
+import de.ks.strudel.request.Request;
 import io.undertow.Handlers;
 import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.server.handlers.resource.ResourceManager;

@@ -15,6 +15,8 @@
  */
 package de.ks.strudel;
 
+import de.ks.strudel.request.Request;
+
 @FunctionalInterface
 public interface Handler {
   Object handle(Request request, Response response) throws Exception;

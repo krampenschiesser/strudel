@@ -16,8 +16,8 @@
 package de.ks.strudel.route.handler;
 
 import de.ks.strudel.HandlerNoReturn;
-import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.request.Request;
 import io.undertow.server.HttpServerExchange;
 
 import javax.annotation.Nullable;

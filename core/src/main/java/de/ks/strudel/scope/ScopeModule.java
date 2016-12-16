@@ -19,8 +19,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
-import de.ks.strudel.Request;
 import de.ks.strudel.Response;
+import de.ks.strudel.request.Request;
 
 import java.util.Locale;
 

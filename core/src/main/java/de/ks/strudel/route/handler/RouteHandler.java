@@ -17,10 +17,12 @@ package de.ks.strudel.route.handler;
 
 import com.google.inject.Key;
 import de.ks.strudel.HandlerNoReturn;
-import de.ks.strudel.Request;
 import de.ks.strudel.Response;
 import de.ks.strudel.json.JsonResolver;
 import de.ks.strudel.localization.LocaleResolver;
+import de.ks.strudel.request.Request;
+import de.ks.strudel.request.RequestBodyParser;
+import de.ks.strudel.request.RequestFormParser;
 import de.ks.strudel.route.Route;
 import de.ks.strudel.scope.RequestScope;
 import de.ks.strudel.template.TemplateEngineResolver;
@@ -58,8 +60,11 @@ public class RouteHandler implements HttpHandler {
     Provider<Request> request = () -> requestScope.scope(Key.get(Request.class), null).get();
     Provider<Response> response = () -> requestScope.scope(Key.get(Response.class), null).get();
 
+    RequestBodyParser bodyParser = new RequestBodyParser(ex, jsonResolver, route.getJsonParser());
+    RequestFormParser formParser = new RequestFormParser(ex);
+
     ExecuteAsAsyncHandler executeAsAsync = new ExecuteAsAsyncHandler(route, asyncRoute);
-    RequestScopeHandler requestScopeHandler = new RequestScopeHandler(requestScope, localeResolver, jsonResolver, route.getJsonParser());
+    RequestScopeHandler requestScopeHandler = new RequestScopeHandler(requestScope, localeResolver, bodyParser, formParser);
     ExceptionHandler exceptionHandler = new ExceptionHandler(exceptionMappings, localeProvider);
     AsyncCallbackHandler asyncCallbackHandler = new AsyncCallbackHandler(route.getAsyncBefore(), route.getAsyncAfter(), request, response);
     RenderingAndExecutionHandler finalRouteHandler = new RenderingAndExecutionHandler(request, response, route, templateEngineResolver, jsonResolver);
