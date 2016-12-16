@@ -6,6 +6,7 @@ include "templateengines:mustache"
 include "templateengines:pebble"
 include "templateengines:thymeleaf"
 include "templateengines:trimou"
+include "examples"
 
 project(":core").name = "strudel-core"
 

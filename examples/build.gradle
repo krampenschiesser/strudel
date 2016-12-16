@@ -1,0 +1,5 @@
+dependencies {
+    compile project (":strudel-core")
+    compile project (":templateengines:strudel-template-trimou")
+    compile project (":templateengines:strudel-template-handlebars")
+}

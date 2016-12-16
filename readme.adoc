@@ -1,3 +1,414 @@
 = Strudel micro web framework
+:toc:
+
+Strudel is heavily inspired by the http://http://sparkjava.com/[Sparkjava] framework, well it is basically a copy.
+Why copy it? +
+
+. The static model was troublesome closing a lot of doors
+. I had trouble extending it or changing configurations like TemplateEngines
+. I wanted to play around with the cool kid http://underow.io[undertow]
+. I always ended up adding basic features like decent Locale support and a RequestScope
 
 
+TIP: All code snippets in this readme have working examples in the examples folder that you can run view.
+
+== Hello World
+
+It looks very similar to spark, the differences are:
+
+* you only work on an instance: *strudel*.
+* you are in control of starting and stopping the server
+
+[source,java]
+Strudel strudel = Strudel.create();
+strudel.get("/", (request, response) -> "hello sauerland!");
+strudel.start();
+
+There is one specialty about the *Strudel.create()* method.
+It is actually creating a https://github.com/google/guice[guice] injector.
+So a manual setup would look like:
+
+[source,java]
+Injector injector = Guice.createInjector(new StrudelModule());
+Strudel strudel = injector.getInstance(Strudel.class);
+strudel.get("/", (request, response) -> "hello sauerland!");
+strudel.start();
+
+== What are the major differences between spark and strudel
+
+Spark::
+Static singleton, only 1 instance per JVM.
+[source,java]
+Spark.get("/hello", (req,res) -> "hello");
+
+TIP: Changed with Spark's instance API in 2.5
+
+
+Strudel::
+@Singleton/Soft singleton provided by guice, multiple instances in 1 JVM possible
+[source,java]
+----
+    Strudel first = Strudel.create();
+    Strudel second= Strudel.create();
+    first.get("/", (request, response) -> "hello I am server 1");
+    second.get("/", (request, response) -> "hello I am server 2");
+
+    first.options().port(8000);
+    second.options().port(8001);
+
+    first.start();
+    second.start();
+----
+
+---
+
+Spark::
+Requests are always handled by separate thread. (Servlet based)
+Strudel::
+Relying heavily on undertow we can dispatch tasks to be executed async while also
+being able to serve tasks synchronously in the same thread.
+[source,java]
+----
+Handler handler = (request, response) -> {
+  Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+  return "hello i am running in a worker thread";
+};
+
+strudel.get("/", handler).async();
+strudel.get("/sync", (request, response) -> "hello i am running in the IO thread");
+----
+
+---
+
+Spark::
+All methods only accept instances as parameters
+Strudel::
+All methods accept instances or classes as parameters.
+Therefore you can use the full power of Dependency Injection to build your application.
+You decide if you want a new instance or a singleton handling the request.
+Or maybe you implement a custom guice scope that acts like a cache and can be cleared?
+[source.java]
+strudel.get("/", MyHandler.class);
+
+TIP: See example *simpledi*
+
+== User guide
+
+=== Simple routes
+
+Strudel uses undertows *RoutingHandler* in order to map the routes.
+So you can use wildcards and route-parameters:
+[source,java]
+----
+strudel.get("/get", (request, response) -> "get");
+strudel.put("/put", (request, response) -> "put");
+strudel.post("/post", (request, response) -> "post");
+strudel.delete("/delete", (request, response) -> "delete");
+
+strudel.get("/wild/*", (request, response) -> "Wildcard route: " + request.routeWildcard());
+
+strudel.get("/user/{name}/page/{page}", (request, response) -> {
+  String name = request.routeParameter("name");
+  String page = request.routeParameter("page");
+  return "Parameter route: user=" + name + ", page=" + page;
+});
+----
+
+=== Customizing routes
+
+Each route returns a *RouteBuilder* that you can use to customize the behaviour of this route.
+Current customizations are:
+
+* _async()_ to execute this route in a worker thread
+* _sync()_ to execute this route in the IO thread
+* _gzip()_ to zip the content
+* _template()_ to mark the route as a template route
+
+=== What is sync/async
+
+Undertow supports simple non blocking requests to be executed in a single thread
+called the *IO Thread*.
+Background/blocking work is submitted to *worker threads* which follows the same model as
+traditional servlet servers.
+
+TIP: in fact there are multiple IO threads, but if you block one of them it is a mess
+
+The following routes are asynchronous by default and run in *worker threads*:
+
+* PUT/POST because we need to enter blocking mode and read from the input stream
+* template routes
+* classpath routes
+* external folder routes
+* webjar routes
+
+The following routes are synchronous and run in the *IO thread*:
+
+* GET/DELETE routes
+
+=== Filters
+
+You can add filters that are executed before and after route calls:
+[source,java]
+----
+strudel.before("/secure/*", (request, response) -> {
+  if (!checkAuth(request)) {
+    response.halt(HttpStatus.FORBIDDEN);
+  }
+});
+strudel.get("/", (request, response) -> "i am the home");
+strudel.get("/secure/panel", (request, response) -> "Secure region");
+
+HandlerNoReturn before = (request, response) -> log.info("Before async execution");
+HandlerNoReturn after = (request, response) -> log.info("After async execution");
+strudel.get("/async", (request, response) -> "i am async").async(before, after);
+----
+
+WARNING: There is one caveat here for async routes.
+Filters are always executed synchronous in the IO thread and will prevent an async route to
+be dispatched to a worker thread.
+
+If you want to add callbacks for the async route you can use the method on async(before,after) on
+the *RouteBuilder*:
+[source,java]
+strudel.get("/async", (request, response) -> "i am async").async(before, after);
+
+=== Redirects
+
+Redirecting is simple and can be done via the *Response*:
+[source,java]
+strudel.get("/",(request, response) -> response.redirect("/target"));
+strudel.get("/target", (request, response) -> "You were redirected");
+
+=== Gzip support
+
+If you want a route to be compressed just configure it to be zipped:
+
+[source,java]
+String longString = IntStream.range(0, 1500).mapToObj(i -> "1").collect(Collectors.joining());
+strudel.get("/", (request, response) -> "I am not zipped").gzip();
+strudel.get("/zip", (request, response) -> longString + "<br/>\nI am zipped!").gzip();
+
+Please note that only above a certain content-length (1480) I start to
+zip the content.
+
+=== Locale parsing
+
+The locale of a request is resolved in 3 ways:
+
+. I look if there is a query parameter *lang*.
+A request like this http://localhost/?lang=de will switch to german language
+. I look for a cookie with the with the name *lang* and use its value as language
+. I check for the *Accept-Language* Http-Header and use the main language
+
+The first language returned by any of these 3 checks will be used.
+So as a developer you can quickly view a page in a different language.
+As a user you can have a cookie specifying your preferred language.
+As a visitor the page is shown to you with your browsers default language.
+
+The locale is resolved with the class *LocaleResolver* feel free to replace it in your
+guice module with a custom implementation.
+
+=== Reading PUT/POST body
+
+Reading a put/post body is done via the *Request*:
+[source,java]
+strudel.post("/post", (request, response) -> "You submitted the following body: <br/>\n" + request.body());
+
+=== Reading FormData
+
+Reading formdata is simple, too. Thanks alot to the great utils of undertow:
+[source,java]
+strudel.post("/post", (request, response) -> {
+  String value = request.formData("text");
+  return "You submitted value: <b>" + value + "</b>";
+});
+
+=== Handling file uploads
+
+Again this is reading formdata and is super simple.
+The following code needs a file upload and reflects the uploded bytes back to you.
+
+[source,java]
+strudel.post("/post", (request, response) -> {
+  Path path = request.formDataFile("file");
+  if (path == null) {
+    return "No file given";
+  } else {
+    response.contentType(MediaType.ANY_IMAGE_TYPE.type());
+    return Files.readAllBytes(path);
+  }
+});
+
+=== Guice integration
+
+
+
+== Template enines
+
+Strudel has build in support for multiple template engines:
+
+* http://freemarker.org/[freemarker]
+[source,gradle]
+compile "de.ks:strudel-template-freemarker:$strudelversion"
+
+* https://github.com/jknack/handlebars.java[handlebars]
+[source,gradle]
+compile "de.ks:strudel-template-handlebars:$strudelversion"
+
+* https://github.com/neuland/jade4j[jade]
+[source,gradle]
+compile "de.ks:strudel-template-jade:$strudelversion"
+
+* https://github.com/spullara/mustache.java[mustache]
+[source,gradle]
+compile "de.ks:strudel-template-mustache:$strudelversion"
+
+* http://www.mitchellbosecke.com/pebble/home[pebble]
+[source,gradle]
+compile "de.ks:strudel-template-pebble:$strudelversion"
+
+* http://www.thymeleaf.org/[thymeleaf] (3.0)
+[source,gradle]
+compile "de.ks:strudel-template-thymeleaf:$strudelversion"
+
+* http://trimou.org/[trimou]
+[source,gradle]
+compile "de.ks:strudel-template-trimou:$strudelversion"
+
+I also would love to include https://github.com/fizzed/rocker[rocker] which is the fastest engine
+with a really nice approach. But sadly it is strongly based on maven and javaagents.
+
+Running the https://github.com/mbosecke/template-benchmark[template benchmark] locally
+with recent versions I get the following results:
+
+[options="header"]
+|===
+|Benchmark             | Mode  |Cnt |     Score      |Error |Units
+|Freemarker.benchmark  |thrpt  |50  |17,244.626 |±  311.420  |ops/s
+|Mustache.benchmark    |thrpt  |50  |22,999.379 |±  290.057  |ops/s
+|*Pebble*.benchmark      |thrpt  |50  |*32,607.491* |±  795.512  |ops/s
+|*Rocker*.benchmark      |thrpt  |50  |*41,433.193*|± 1,164.793 |ops/s
+|Thymeleaf.benchmark   |thrpt  |50  | 6,393.351 |±   73.580  |ops/s
+|Trimou.benchmark      |thrpt  |50  |21,647.772 |±  803.671  |ops/s
+|Velocity.benchmark    |thrpt  |50  |22,363.383 |±  329.376  |ops/s
+|===
+
+So rocker is the fastest as it compiles its templates into bytecode. +
+However pebble is just blazingly fast without doing fancy tricks.
+
+=== Localization support
+
+The following template engines support localization:
+
+* Thymeleaf
+[source,html]
+<h1 th:text="#{key}">No translation</h1>
+
+* Pebble
+[source,html]
+<h1>{{ i18n("WEB-INF/template/index","key") }}</h1>
+
+* Handlebars (the variable _locale_ below comes from the model and is automatically set by strudel)
+[source,html]
+<h1>{{ i18n "key" bundle="WEB-INF/template/index" locale=locale }}</h1>
+
+* Trimou
+[source,html]
+<h1>{{ i18n "key" }}</h1>
+
+=== Using a template engine
+
+There are 2 ways of using a template engine:
+
+. create a binding for the interfae *TemplateEngine* to you preferred template engine implementation:
+[source,java]
+bind(TemplateEngine.class).to(TrimouEngine.class);
+//rendering via:
+strudel.get("/", (request, response) -> {
+  Map<String, String> model = new HashMap<>();
+  model.put("title", "Hello Title!");
+  model.put("hello", "Hello Sauerland!");
+  return new ModelAndView(model, "trimouhello.html");
+}).template();
+
+. Pass the template engine to specific routes (want to use different template engine for css?)
+[source,java]
+strudel.get("/", (request, response) -> {
+  Map<String, String> model = new HashMap<>();
+  model.put("title", "Hello Title!");
+  model.put("hello", "Hello Sauerland!");
+  return new ModelAndView(model, "trimouhello.html");
+}).template(TrimouEngine.class);
+
+There are some things that are common for using all of the template engines:
+
+* include the corresponding dependencies, eg:
+[source,gradle]
+compile "de.ks:strudel-template-trimou:$strudelversion"
+
+* Create Strudel with an additional guice module (one for each template engine)
+[source,java]
+Strudel strudel = Strudel.create(new TrimouModule());
+
+* create a handler that returns an instance of *ModelAndView* and configure it as a template route
+[source,java]
+strudel.get("/", (request, response) -> {
+  Map<String, String> model = new HashMap<>();
+  model.put("title", "Hello Title!");
+  model.put("hello", "Hello Sauerland!");
+  return new ModelAndView(model, "trimouhello.html");
+}).template();
+
+
+=== Putting it together
+
+[source,java]
+----
+public class Templating {
+  public static void main(final String[] args) {
+    Strudel strudel = Strudel.create(new TemplateModule(), new TrimouModule());
+    strudel.get("/", (request, response) -> {
+      Map<String, String> model = new HashMap<>();
+      model.put("title", "Hello Title!");
+      model.put("hello", "Hello Sauerland!");
+      return new ModelAndView(model, "trimouhello.html");
+    }).template();
+    strudel.start();
+  }
+
+  static class TemplateModule extends AbstractModule {
+    @Override
+    protected void configure() {
+      bind(TemplateEngine.class).to(TrimouEngine.class);
+    }
+  }
+}
+----
+[source,html]
+.trimouhello.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+</head>
+<body>
+<h1>
+{{ hello }}
+</h1>
+</body>
+</html>
+
+=== Defaults of the template engines (classpath, locale)
+
+The default classpath location for all templates is: +
+*WEB-INF/template*
+
+However if you want to change it you can create the template module with a different
+classpath prefix (here: _/de/ks/public/template_):
+[source,java]
+Strudel strudel = Strudel.create(new TrimouModule("/de/ks/public/template"));
+
+For those template engines supporting i18n I pass in the locale.
+
+All template engines are @Singleton / soft singletons that are global for your injector.
