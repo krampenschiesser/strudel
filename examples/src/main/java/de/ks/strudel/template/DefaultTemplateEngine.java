@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class DefaultTemplateEngine {
   public static void main(final String[] args) {
-    Strudel strudel = Strudel.create(new TemplateModule(), new TrimouModule());
+    Strudel strudel = Strudel.create(new TemplateModule(), new TrimouModule("WEB-INF/template/localization"));
     strudel.get("/", (request, response) -> {
       Map<String, String> model = new HashMap<>();
       model.put("title", "Hello Title!");

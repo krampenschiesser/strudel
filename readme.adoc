@@ -265,6 +265,12 @@ static class Listener extends AbstractReceiveListener {
   }
 }
 
+=== Webjars
+
+Integration of http://www.webjars.org/[webjars] is very simple but not enabled by default:
+[source,java]
+strudel.webjars();
+
 
 === Guice integration
 
@@ -393,7 +399,7 @@ strudel.get("/", (request, response) -> {
 ----
 public class Templating {
   public static void main(final String[] args) {
-    Strudel strudel = Strudel.create(new TemplateModule(), new TrimouModule());
+    Strudel strudel = Strudel.create(new TemplateModule(), new TrimouModule("WEB-INF/template/localization"));
     strudel.get("/", (request, response) -> {
       Map<String, String> model = new HashMap<>();
       model.put("title", "Hello Title!");
@@ -421,8 +427,12 @@ public class Templating {
 </head>
 <body>
 <h1>
-{{ hello }}
+  {{ hello }}
 </h1>
+<p>
+  {{ i18n "locaizationKey" }}
+</p>
+<a href="?lang=de">Click for switch to german</a>
 </body>
 </html>
 
@@ -434,7 +444,7 @@ The default classpath location for all templates is: +
 However if you want to change it you can create the template module with a different
 classpath prefix (here: _/de/ks/public/template_):
 [source,java]
-Strudel strudel = Strudel.create(new TrimouModule("/de/ks/public/template"));
+Strudel strudel = Strudel.create(new MustacheModule("/de/ks/public/template"));
 
 For those template engines supporting i18n I pass in the locale.
 
