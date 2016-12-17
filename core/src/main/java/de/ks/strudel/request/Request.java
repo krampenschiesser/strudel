@@ -21,6 +21,7 @@ import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
+import io.undertow.util.Headers;
 import io.undertow.util.PathTemplateMatch;
 
 import javax.annotation.Nullable;
@@ -115,7 +116,7 @@ public class Request {
   /**
    * @return address of request client
    */
-  public InetSocketAddress sourceAddress() {
+  public InetSocketAddress clientAddress() {
     return exchange.getSourceAddress();
   }
 
@@ -276,5 +277,9 @@ public class Request {
    */
   public @Nullable FormData formData() throws IOException {
     return formParser.formData();
+  }
+
+  public String userAgent() {
+    return headerValue(Headers.USER_AGENT_STRING);
   }
 }

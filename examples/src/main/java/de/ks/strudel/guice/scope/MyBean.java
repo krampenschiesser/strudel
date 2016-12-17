@@ -32,6 +32,6 @@ public class MyBean implements Handler {
 
   @Override
   public Object handle(Request _request, Response _response) throws Exception {
-    return "Your address is: " + request.sourceAddress() + " and your locale is " + locale.getDisplayName();
+    return "Your address is: " + request.clientAddress() + " and your locale is " + locale.getDisplayName();
   }
 }
