@@ -140,6 +140,7 @@ public class Response {
 
   /**
    * Get all response headers
+   *
    * @return manipulatable map
    */
   public HeaderMap headers() {
@@ -148,6 +149,7 @@ public class Response {
 
   /**
    * Sets response content type header
+   *
    * @param type content type
    * @return self
    */
@@ -165,7 +167,8 @@ public class Response {
 
   /**
    * sets response content length
-   * @param length  l
+   *
+   * @param length l
    * @return self
    */
   public Response contentLength(long length) {
@@ -175,12 +178,27 @@ public class Response {
 
   /**
    * Sets a response cookie
-   * @param key cookie name
+   *
+   * @param key   cookie name
    * @param value val
    * @return self
    */
   public Response cookie(String key, String value) {
-    exchange.setResponseCookie(new CookieImpl(key, value));
+    return cookie(key, value, Integer.MAX_VALUE);
+  }
+
+  /**
+   * Sets a response cookie with given ttl
+   *
+   * @param key   cookie name
+   * @param value val
+   * @param ttl   time to live
+   * @return self
+   */
+  public Response cookie(String key, String value, int ttl) {
+    CookieImpl cookie = new CookieImpl(key, value);
+    cookie.setMaxAge(ttl);
+    exchange.setResponseCookie(cookie);
     return this;
   }
 
