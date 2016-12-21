@@ -25,10 +25,10 @@ import javax.inject.Inject;
  * Executes before/after filters
  */
 public class BeforeAfterMainHandler implements HttpHandler {
-  private final BeforeHandler before;
-  private final MainRoutingHandler main;
-  private final AfterHandler after;
-  private final AsyncTracker asyncTracker;
+  protected final BeforeHandler before;
+  protected final MainRoutingHandler main;
+  protected final AfterHandler after;
+  protected final AsyncTracker asyncTracker;
 
   @Inject
   public BeforeAfterMainHandler(BeforeHandler before, MainRoutingHandler main, AfterHandler after, AsyncTracker asyncTracker) {
@@ -38,7 +38,8 @@ public class BeforeAfterMainHandler implements HttpHandler {
     this.asyncTracker = asyncTracker;
   }
 
-  @Override public void handleRequest(HttpServerExchange exchange) throws Exception {
+  @Override
+  public void handleRequest(HttpServerExchange exchange) throws Exception {
     before.handleRequest(exchange);
     if (!exchange.isComplete()) {
       main.handleRequest(exchange);

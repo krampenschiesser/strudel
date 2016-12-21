@@ -30,10 +30,10 @@ import javax.inject.Provider;
  */
 @NotThreadSafe//new instance per handling
 public class AsyncCallbackHandler extends WrappingHandler {
-  private HandlerNoReturn asyncBefore;
-  private HandlerNoReturn asyncAfter;
-  private final Provider<Request> request;
-  private final Provider<Response> response;
+  protected HandlerNoReturn asyncBefore;
+  protected HandlerNoReturn asyncAfter;
+  protected final Provider<Request> request;
+  protected final Provider<Response> response;
 
   @Inject
   public AsyncCallbackHandler(Provider<Request> request, Provider<Response> response) {

@@ -28,10 +28,10 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class MainHandler implements HttpHandler {
-  private final AsyncRouteHandler asyncRouteHandler;
-  private final EndExchangeHandler endExchangeHandler;
-  private final ExceptionHandler exceptionHandler;
-  private final BeforeAfterMainHandler beforeAfterMainHandler;
+  protected final AsyncRouteHandler asyncRouteHandler;
+  protected final EndExchangeHandler endExchangeHandler;
+  protected final ExceptionHandler exceptionHandler;
+  protected final BeforeAfterMainHandler beforeAfterMainHandler;
 
   @Inject
   public MainHandler(AsyncRouteHandler asyncRouteHandler, EndExchangeHandler endExchangeHandler, ExceptionHandler exceptionHandler, BeforeAfterMainHandler beforeAfterMainHandler) {

@@ -27,8 +27,8 @@ import javax.inject.Inject;
  */
 public class ExecuteAsAsyncHandler extends WrappingHandler {
 
-  private Route route;
-  private final AsyncTracker asyncRoute;
+  protected Route route;
+  protected final AsyncTracker asyncRoute;
 
   @Inject
   public ExecuteAsAsyncHandler(AsyncTracker asyncRoute) {

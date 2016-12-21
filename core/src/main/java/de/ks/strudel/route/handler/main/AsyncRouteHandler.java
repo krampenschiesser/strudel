@@ -25,7 +25,7 @@ import javax.inject.Inject;
  * stores thread locally if this request will be executed async, so it is not ended at the end of the synchronous call
  */
 public class AsyncRouteHandler extends WrappingHandler {
-  private final AsyncTracker asyncTracker;
+  protected final AsyncTracker asyncTracker;
 
   @Inject
   public AsyncRouteHandler(AsyncTracker asyncTracker) {

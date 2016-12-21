@@ -41,11 +41,11 @@ import java.nio.ByteBuffer;
  * Additionally the exchange.send method is invoked
  */
 public class RenderingAndExecutionHandler implements HttpHandler {
-  private final Provider<Request> request;
-  private final Provider<Response> response;
-  private final TemplateEngineResolver templateEngineResolver;
-  private final JsonResolver jsonResolver;
-  private Route route;
+  protected final Provider<Request> request;
+  protected final Provider<Response> response;
+  protected final TemplateEngineResolver templateEngineResolver;
+  protected final JsonResolver jsonResolver;
+  protected Route route;
 
   @Inject
   public RenderingAndExecutionHandler(Provider<Request> request, Provider<Response> response, TemplateEngineResolver templateEngineResolver, JsonResolver jsonResolver) {
@@ -99,7 +99,7 @@ public class RenderingAndExecutionHandler implements HttpHandler {
     }
   }
 
-  private Object renderTemplate(Object retval) throws Exception {
+  protected Object renderTemplate(Object retval) throws Exception {
     if (!(retval instanceof ModelAndView)) {
       throw new IllegalStateException("in template route " + route.getPath() + " a " + ModelAndView.class.getSimpleName() + " needs to be returned");
     }

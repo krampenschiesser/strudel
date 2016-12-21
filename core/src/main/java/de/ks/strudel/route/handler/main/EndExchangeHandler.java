@@ -26,7 +26,7 @@ import javax.inject.Inject;
  * At the end of a synchronous call we set error 404 and end the exchange
  */
 public class EndExchangeHandler extends WrappingHandler {
-  private final AsyncTracker asyncTracker;
+  protected final AsyncTracker asyncTracker;
 
   @Inject
   public EndExchangeHandler(AsyncTracker asyncTracker) {

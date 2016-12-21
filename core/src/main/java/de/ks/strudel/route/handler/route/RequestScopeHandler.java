@@ -33,10 +33,10 @@ import java.util.Locale;
  */
 @NotThreadSafe//new instance per route handling
 public class RequestScopeHandler extends WrappingHandler {
-  private final RequestScope requestScope;
-  private final LocaleResolver localeResolver;
-  private RequestBodyParser bodyParser;
-  private RequestFormParser formParser;
+  protected final RequestScope requestScope;
+  protected final LocaleResolver localeResolver;
+  protected RequestBodyParser bodyParser;
+  protected RequestFormParser formParser;
 
   @Inject
   public RequestScopeHandler(RequestScope requestScope, LocaleResolver localeResolver) {
