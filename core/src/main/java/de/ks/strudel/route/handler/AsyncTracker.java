@@ -15,26 +15,17 @@
  */
 package de.ks.strudel.route.handler;
 
-import io.undertow.server.HttpServerExchange;
+import javax.inject.Singleton;
 
-/**
- * stores thread locally if this request will be executed async, so it is not ended at the end of the synchronous call
- */
-public class AsyncRouteHandler extends WrappingHandler {
-  private final ThreadLocal<Boolean> asyncRoute;
+@Singleton
+public class AsyncTracker {
+  final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
 
-  public AsyncRouteHandler(ThreadLocal<Boolean> asyncRoute) {
-    this.asyncRoute = asyncRoute;
+  public boolean isAsyncRoute() {
+    return asyncRoute.get();
   }
 
-  @Override protected boolean before(HttpServerExchange exchange) throws Exception {
-    asyncRoute.set(false);
-    return true;
-  }
-
-  @Override protected void after(HttpServerExchange exchange) throws Exception {
-    if (asyncRoute.get()) {
-      asyncRoute.set(false);
-    }
+  public void setAsyncRoute(boolean async) {
+    asyncRoute.set(async);
   }
 }

@@ -13,26 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route.handler;
+package de.ks.strudel.route.handler.main;
 
-import io.undertow.io.IoCallback;
-import io.undertow.io.Sender;
-import io.undertow.server.HttpServerExchange;
-import org.xnio.IoUtils;
+import io.undertow.server.RoutingHandler;
 
-import java.io.IOException;
+import javax.inject.Singleton;
 
-class NoCompletionCallback implements IoCallback {
-  @Override
-  public void onComplete(HttpServerExchange exchange, Sender sender) {
-  }
-
-  @Override
-  public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
-    try {
-      exchange.endExchange();
-    } finally {
-      IoUtils.safeClose(exchange.getConnection());
-    }
-  }
+@Singleton
+public class BeforeHandler extends RoutingHandler {
 }

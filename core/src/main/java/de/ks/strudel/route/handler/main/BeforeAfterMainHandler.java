@@ -13,33 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route.handler;
+package de.ks.strudel.route.handler.main;
 
+import de.ks.strudel.route.handler.AsyncTracker;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.RoutingHandler;
+
+import javax.inject.Inject;
 
 /**
  * Executes before/after filters
  */
 public class BeforeAfterMainHandler implements HttpHandler {
-  private final RoutingHandler before;
-  private final RoutingHandler main;
-  private final RoutingHandler after;
-  private final ThreadLocal<Boolean> asyncRoute;
+  private final BeforeHandler before;
+  private final MainRoutingHandler main;
+  private final AfterHandler after;
+  private final AsyncTracker asyncTracker;
 
-  public BeforeAfterMainHandler(RoutingHandler before, RoutingHandler main, RoutingHandler after, ThreadLocal<Boolean> asyncRoute) {
+  @Inject
+  public BeforeAfterMainHandler(BeforeHandler before, MainRoutingHandler main, AfterHandler after, AsyncTracker asyncTracker) {
     this.before = before;
     this.main = main;
     this.after = after;
-    this.asyncRoute = asyncRoute;
+    this.asyncTracker = asyncTracker;
   }
 
   @Override public void handleRequest(HttpServerExchange exchange) throws Exception {
     before.handleRequest(exchange);
     if (!exchange.isComplete()) {
       main.handleRequest(exchange);
-      if (!asyncRoute.get()) {
+      if (!asyncTracker.isAsyncRoute()) {
         after.handleRequest(exchange);
       }
     }

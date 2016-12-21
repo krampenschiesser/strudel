@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel;
+package de.ks.strudel.route.handler.main;
 
-import com.google.inject.AbstractModule;
-import de.ks.strudel.scope.ScopeModule;
+import io.undertow.server.RoutingHandler;
 
-/**
- * General module for strudel, nothing interesting here
- */
-public class StrudelModule extends AbstractModule {
-  @Override protected void configure() {
-    install(new ScopeModule());
+import javax.inject.Singleton;
 
-  }
+@Singleton
+public class MainRoutingHandler extends RoutingHandler {
 }

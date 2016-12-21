@@ -13,35 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route.handler;
+package de.ks.strudel.route.handler.route;
 
 import de.ks.strudel.Response;
 import de.ks.strudel.localization.LocaleResolver;
 import de.ks.strudel.request.Request;
 import de.ks.strudel.request.RequestBodyParser;
 import de.ks.strudel.request.RequestFormParser;
+import de.ks.strudel.route.handler.WrappingHandler;
 import de.ks.strudel.scope.RequestScope;
 import io.undertow.server.HttpServerExchange;
 
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.inject.Inject;
 import java.util.Locale;
 
 /**
  * Starts and stops the request scope.
  */
+@NotThreadSafe//new instance per route handling
 public class RequestScopeHandler extends WrappingHandler {
   private final RequestScope requestScope;
   private final LocaleResolver localeResolver;
-  private final RequestBodyParser bodyParser;
-  private final RequestFormParser formParser;
+  private RequestBodyParser bodyParser;
+  private RequestFormParser formParser;
 
-  public RequestScopeHandler(RequestScope requestScope, LocaleResolver localeResolver, RequestBodyParser bodyParser, RequestFormParser formParser) {
+  @Inject
+  public RequestScopeHandler(RequestScope requestScope, LocaleResolver localeResolver) {
     this.requestScope = requestScope;
     this.localeResolver = localeResolver;
-    this.bodyParser = bodyParser;
-    this.formParser = formParser;
   }
 
-  @Override protected boolean before(HttpServerExchange ex) {
+  public RequestScopeHandler setBodyParser(RequestBodyParser bodyParser) {
+    this.bodyParser = bodyParser;
+    return this;
+  }
+
+  public RequestScopeHandler setFormParser(RequestFormParser formParser) {
+    this.formParser = formParser;
+    return this;
+  }
+
+  @Override
+  protected boolean before(HttpServerExchange ex) {
     Locale locale = localeResolver.getLocale(ex);
     Request request = new Request(ex, locale, bodyParser, formParser);
     Response response = new Response(ex);
@@ -49,7 +63,8 @@ public class RequestScopeHandler extends WrappingHandler {
     return true;
   }
 
-  @Override protected void after(HttpServerExchange exchange) {
+  @Override
+  protected void after(HttpServerExchange exchange) {
     requestScope.exit();
   }
 }

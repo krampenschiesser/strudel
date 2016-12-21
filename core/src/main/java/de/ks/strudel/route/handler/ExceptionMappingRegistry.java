@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel;
+package de.ks.strudel.route.handler;
 
-import com.google.inject.AbstractModule;
-import de.ks.strudel.scope.ScopeModule;
+import de.ks.strudel.HandlerNoReturn;
+import io.undertow.util.CopyOnWriteMap;
 
-/**
- * General module for strudel, nothing interesting here
- */
-public class StrudelModule extends AbstractModule {
-  @Override protected void configure() {
-    install(new ScopeModule());
+import javax.inject.Singleton;
+import java.util.Map;
+import java.util.function.Supplier;
 
+@Singleton
+public class ExceptionMappingRegistry {
+  Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings = new CopyOnWriteMap<>();
+
+  public Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> getExceptionMappings() {
+    return exceptionMappings;
   }
 }

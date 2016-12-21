@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel;
+package de.ks.strudel.route.handler.route;
 
-import com.google.inject.AbstractModule;
-import de.ks.strudel.scope.ScopeModule;
+import io.undertow.io.IoCallback;
+import io.undertow.io.Sender;
+import io.undertow.server.HttpServerExchange;
+import org.xnio.IoUtils;
 
-/**
- * General module for strudel, nothing interesting here
- */
-public class StrudelModule extends AbstractModule {
-  @Override protected void configure() {
-    install(new ScopeModule());
+import java.io.IOException;
 
+class NoCompletionCallback implements IoCallback {
+  @Override
+  public void onComplete(HttpServerExchange exchange, Sender sender) {
+  }
+
+  @Override
+  public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
+    try {
+      exchange.endExchange();
+    } finally {
+      IoUtils.safeClose(exchange.getConnection());
+    }
   }
 }

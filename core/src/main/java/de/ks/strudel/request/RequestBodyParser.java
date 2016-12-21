@@ -20,6 +20,7 @@ import de.ks.strudel.json.JsonResolver;
 import io.undertow.connector.PooledByteBuffer;
 import io.undertow.server.HttpServerExchange;
 
+import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,16 +31,27 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RequestBodyParser {
-  final HttpServerExchange exchange;
+  HttpServerExchange exchange;
   final JsonResolver jsonResolver;
-  final Class<? extends JsonParser> preferredParser;
+  Class<? extends JsonParser> preferredParser;
   final AtomicReference<String> body = new AtomicReference<>();
   final AtomicReference<byte[]> bodyBytes = new AtomicReference<>();
 
-  public RequestBodyParser(HttpServerExchange exchange, JsonResolver jsonResolver, Class<? extends JsonParser> preferredParser) {
+  @Inject
+  public RequestBodyParser(JsonResolver jsonResolver) {
     this.exchange = exchange;
     this.jsonResolver = jsonResolver;
     this.preferredParser = preferredParser;
+  }
+
+  public RequestBodyParser setExchange(HttpServerExchange exchange) {
+    this.exchange = exchange;
+    return this;
+  }
+
+  public RequestBodyParser setPreferredParser(Class<? extends JsonParser> preferredParser) {
+    this.preferredParser = preferredParser;
+    return this;
   }
 
   public byte[] bodyAsBytes() throws IOException {

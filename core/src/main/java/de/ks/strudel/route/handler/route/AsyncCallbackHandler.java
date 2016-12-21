@@ -13,40 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route.handler;
+package de.ks.strudel.route.handler.route;
 
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Response;
 import de.ks.strudel.request.Request;
+import de.ks.strudel.route.handler.WrappingHandler;
 import io.undertow.server.HttpServerExchange;
 
-import javax.annotation.Nullable;
+import javax.annotation.concurrent.NotThreadSafe;
+import javax.inject.Inject;
 import javax.inject.Provider;
 
 /**
  * Used to execute async before/after callbacks around a handler
  */
+@NotThreadSafe//new instance per handling
 public class AsyncCallbackHandler extends WrappingHandler {
-  private final HandlerNoReturn asyncBefore;
-  private final HandlerNoReturn asyncAfter;
+  private HandlerNoReturn asyncBefore;
+  private HandlerNoReturn asyncAfter;
   private final Provider<Request> request;
   private final Provider<Response> response;
 
-  public AsyncCallbackHandler(@Nullable HandlerNoReturn asyncBefore, @Nullable HandlerNoReturn asyncAfter, Provider<Request> request, Provider<Response> response) {
-    this.asyncBefore = asyncBefore;
-    this.asyncAfter = asyncAfter;
+  @Inject
+  public AsyncCallbackHandler(Provider<Request> request, Provider<Response> response) {
     this.request = request;
     this.response = response;
   }
 
-  @Override protected boolean before(HttpServerExchange exchange) throws Exception {
+  public AsyncCallbackHandler setAsyncAfter(HandlerNoReturn asyncAfter) {
+    this.asyncAfter = asyncAfter;
+    return this;
+  }
+
+  public AsyncCallbackHandler setAsyncBefore(HandlerNoReturn asyncBefore) {
+    this.asyncBefore = asyncBefore;
+    return this;
+  }
+
+  @Override
+  protected boolean before(HttpServerExchange exchange) throws Exception {
     if (asyncBefore != null) {
       asyncBefore.handle(request.get(), response.get());
     }
     return true;
   }
 
-  @Override protected void after(HttpServerExchange exchange) throws Exception {
+  @Override
+  protected void after(HttpServerExchange exchange) throws Exception {
     if (asyncAfter != null) {
       asyncAfter.handle(request.get(), response.get());
     }

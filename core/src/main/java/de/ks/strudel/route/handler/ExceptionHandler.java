@@ -22,6 +22,7 @@ import de.ks.strudel.request.Request;
 import de.ks.strudel.route.HttpStatus;
 import io.undertow.server.HttpServerExchange;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Locale;
 import java.util.Map;
@@ -29,11 +30,12 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class ExceptionHandler extends WrappingHandler {
-  private final Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings;
   private final Provider<Locale> localeProvider;
+  private final ExceptionMappingRegistry exceptionMappingRegistry;
 
-  public ExceptionHandler(Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings, Provider<Locale> localeProvider) {
-    this.exceptionMappings = exceptionMappings;
+  @Inject
+  public ExceptionHandler(ExceptionMappingRegistry exceptionMappingRegistry, Provider<Locale> localeProvider) {
+    this.exceptionMappingRegistry = exceptionMappingRegistry;
     this.localeProvider = localeProvider;
   }
 
@@ -59,12 +61,12 @@ public class ExceptionHandler extends WrappingHandler {
   }
 
   protected void handleExceptionByHandler(Exception e, HttpServerExchange exchange) throws Exception {
-    HandlerNoReturn handler = Optional.ofNullable(exceptionMappings.get(e.getClass())).map(Supplier::get).orElse(null);
+    HandlerNoReturn handler = Optional.ofNullable(exceptionMappingRegistry.getExceptionMappings().get(e.getClass())).map(Supplier::get).orElse(null);
     if (handler == null) {
-      handler = exceptionMappings.entrySet().stream()//
-                                 .filter(entry -> entry.getKey().isAssignableFrom(e.getClass()))//
-                                 .map(Map.Entry::getValue).map(Supplier::get)//
-                                 .findFirst().orElse(null);
+      handler = exceptionMappingRegistry.getExceptionMappings().entrySet().stream()//
+                                        .filter(entry -> entry.getKey().isAssignableFrom(e.getClass()))//
+                                        .map(Map.Entry::getValue).map(Supplier::get)//
+                                        .findFirst().orElse(null);
     }
     if (handler != null) {
       Locale locale = safeGetLocale();

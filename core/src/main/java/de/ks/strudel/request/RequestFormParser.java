@@ -26,10 +26,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class RequestFormParser {
   final AtomicReference<FormData> formData = new AtomicReference<>();
-  final HttpServerExchange exchange;
+  HttpServerExchange exchange;
 
-  public RequestFormParser(HttpServerExchange exchange) {
+  public RequestFormParser setExchange(HttpServerExchange exchange) {
     this.exchange = exchange;
+    return this;
   }
 
   public String formData(String key) throws IOException {

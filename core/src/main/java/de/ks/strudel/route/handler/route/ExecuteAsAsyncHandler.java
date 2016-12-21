@@ -13,27 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route.handler;
+package de.ks.strudel.route.handler.route;
 
 import de.ks.strudel.route.Route;
+import de.ks.strudel.route.handler.AsyncTracker;
+import de.ks.strudel.route.handler.WrappingHandler;
 import io.undertow.server.HttpServerExchange;
+
+import javax.inject.Inject;
 
 /**
  * Dispatches a itself to the worker thread
  */
 public class ExecuteAsAsyncHandler extends WrappingHandler {
 
-  private final Route route;
-  private final ThreadLocal<Boolean> asyncRoute;
+  private Route route;
+  private final AsyncTracker asyncRoute;
 
-  public ExecuteAsAsyncHandler(Route route, ThreadLocal<Boolean> asyncRoute) {
-    this.route = route;
+  @Inject
+  public ExecuteAsAsyncHandler(AsyncTracker asyncRoute) {
     this.asyncRoute = asyncRoute;
   }
 
-  @Override protected boolean before(HttpServerExchange ex) {
+  public ExecuteAsAsyncHandler setRoute(Route route) {
+    this.route = route;
+    return this;
+  }
+
+  @Override
+  protected boolean before(HttpServerExchange ex) {
     if (route.isAsync() && ex.isInIoThread()) {
-      asyncRoute.set(true);
+      asyncRoute.setAsyncRoute(true);
       ex.dispatch(this);
       return false;
     } else {
@@ -41,7 +51,8 @@ public class ExecuteAsAsyncHandler extends WrappingHandler {
     }
   }
 
-  @Override protected void after(HttpServerExchange exchange) {
+  @Override
+  protected void after(HttpServerExchange exchange) {
 
   }
 }

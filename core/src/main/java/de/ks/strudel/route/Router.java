@@ -18,30 +18,25 @@ package de.ks.strudel.route;
 import com.google.inject.Injector;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Strudel;
-import de.ks.strudel.json.JsonResolver;
-import de.ks.strudel.localization.LocaleResolver;
-import de.ks.strudel.route.handler.MainHandler;
-import de.ks.strudel.route.handler.RouteHandler;
-import de.ks.strudel.scope.RequestScope;
-import de.ks.strudel.template.TemplateEngineResolver;
+import de.ks.strudel.route.handler.ExceptionMappingRegistry;
+import de.ks.strudel.route.handler.main.AfterHandler;
+import de.ks.strudel.route.handler.main.BeforeHandler;
+import de.ks.strudel.route.handler.main.MainHandler;
+import de.ks.strudel.route.handler.main.MainRoutingHandler;
+import de.ks.strudel.route.handler.route.RouteHandler;
 import io.undertow.Handlers;
 import io.undertow.attribute.ResponseHeaderAttribute;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
-import io.undertow.util.CopyOnWriteMap;
 import io.undertow.util.Headers;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.util.Locale;
-import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * Big behemoth handling registering the routes after {@link Strudel#start()}
@@ -50,42 +45,35 @@ import java.util.function.Supplier;
 @Singleton
 public class Router {
   public static final int MTU = 1480;
-  final RoutingHandler routing;
-  final RoutingHandler before;
+  final MainRoutingHandler routing;
+  final BeforeHandler before;
+  final AfterHandler after;
+  private final Provider<RouteHandler> routeHandlerProvider;
+
   final Predicate contentSizeAbove100 = Predicates.or(//
     Predicates.not(Predicates.exists(new ResponseHeaderAttribute(Headers.CONTENT_LENGTH))),//Currently undertow does not always set the content length
     Predicates.maxContentSize(MTU));
-  final RoutingHandler after;
-  final HttpHandler mainHandler;
-  final Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings = new CopyOnWriteMap<>();
-  final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();
-  final Injector injector;
-  final RequestScope requestScope;
-  final TemplateEngineResolver templateEngineResolver;
-  final LocaleResolver localeResolver;
-  private final JsonResolver jsonResolver;
-  private final Provider<Locale> localeProvider;
+  private final HttpHandler mainHandler;
+  private final ExceptionMappingRegistry exceptionMappingRegistry;
+  private final Injector injector;
 
-  @Inject public Router(Injector injector, RequestScope requestScope, TemplateEngineResolver templateEngineResolver, LocaleResolver localeResolver, JsonResolver jsonResolver, Provider<Locale> localeProvider) {
+  @Inject
+  public Router(Injector injector, MainHandler mainHandler, BeforeHandler before, MainRoutingHandler routing, AfterHandler after, Provider<RouteHandler> routeHandlerProvider, ExceptionMappingRegistry exceptionMappingRegistry) {
     this.injector = injector;
-    this.requestScope = requestScope;
-    this.templateEngineResolver = templateEngineResolver;
-    this.localeResolver = localeResolver;
-    this.jsonResolver = jsonResolver;
-    this.localeProvider = localeProvider;
+    this.mainHandler = mainHandler;
+    this.before = before;
+    this.routing = routing;
+    this.after = after;
+    this.routeHandlerProvider = routeHandlerProvider;
+    this.exceptionMappingRegistry = exceptionMappingRegistry;
 
-    routing = Handlers.routing();
-    before = Handlers.routing();
-    after = Handlers.routing();
     HttpHandler noop = ex -> "".toCharArray();
-    before.setFallbackHandler(noop);
-    before.setInvalidMethodHandler(null);
-    after.setFallbackHandler(noop);
-    after.setInvalidMethodHandler(null);
-    routing.setFallbackHandler(after);
-    routing.setInvalidMethodHandler(after);
-
-    mainHandler = new MainHandler(asyncRoute, exceptionMappings, before, routing, after, localeProvider);
+    this.before.setFallbackHandler(noop);
+    this.before.setInvalidMethodHandler(null);
+    this.after.setFallbackHandler(noop);
+    this.after.setInvalidMethodHandler(null);
+    this.routing.setFallbackHandler(after);
+    this.routing.setInvalidMethodHandler(after);
   }
 
   private HttpHandler wrapInGzipHandler(HttpHandler handler) {
@@ -113,7 +101,7 @@ public class Router {
       httpHandler = routeHandler;
     }
 
-    RoutingHandler currentRoutingHandler;
+    io.undertow.server.RoutingHandler currentRoutingHandler;
     if (route.isFilter()) {
       currentRoutingHandler = route.getFilterType() == FilterType.BEFORE ? before : after;
     } else {
@@ -123,15 +111,17 @@ public class Router {
   }
 
   private HttpHandler createRouteHandler(Route route) {
-    return new RouteHandler(route, requestScope, asyncRoute, templateEngineResolver, jsonResolver, localeResolver, exceptionMappings, localeProvider);
+    RouteHandler routeHandler = routeHandlerProvider.get();
+    routeHandler.setRoute(route);
+    return routeHandler;
   }
 
   public void addExceptionHandler(Class<? extends Exception> clazz, Class<? extends HandlerNoReturn> handler) {
-    exceptionMappings.put(clazz, () -> injector.getInstance(handler));
+    exceptionMappingRegistry.getExceptionMappings().put(clazz, () -> injector.getInstance(handler));
   }
 
   public void addExceptionHandler(Class<? extends Exception> clazz, HandlerNoReturn handler) {
-    exceptionMappings.put(clazz, () -> handler);
+    exceptionMappingRegistry.getExceptionMappings().put(clazz, () -> handler);
   }
 
   public HttpHandler getHandler() {

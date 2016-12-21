@@ -13,27 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route.handler;
+package de.ks.strudel.route.handler.main;
 
 import de.ks.strudel.route.HttpStatus;
+import de.ks.strudel.route.handler.AsyncTracker;
+import de.ks.strudel.route.handler.WrappingHandler;
 import io.undertow.server.HttpServerExchange;
+
+import javax.inject.Inject;
 
 /**
  * At the end of a synchronous call we set error 404 and end the exchange
  */
 public class EndExchangeHandler extends WrappingHandler {
-  private final ThreadLocal<Boolean> asyncRoute;
+  private final AsyncTracker asyncTracker;
 
-  public EndExchangeHandler(ThreadLocal<Boolean> asyncRoute) {
-    this.asyncRoute = asyncRoute;
+  @Inject
+  public EndExchangeHandler(AsyncTracker asyncTracker) {
+    this.asyncTracker = asyncTracker;
   }
 
-  @Override protected boolean before(HttpServerExchange exchange) throws Exception {
+  @Override
+  protected boolean before(HttpServerExchange exchange) throws Exception {
     return true;
   }
 
-  @Override protected void after(HttpServerExchange exchange) throws Exception {
-    if (!asyncRoute.get()) {
+  @Override
+  protected void after(HttpServerExchange exchange) throws Exception {
+    if (!asyncTracker.isAsyncRoute()) {
       boolean inProgress = (exchange.isResponseStarted() || exchange.isDispatched());
       if (!inProgress && exchange.getStatusCode() == 200) {
         exchange.setStatusCode(HttpStatus.NOT_FOUND.getValue());

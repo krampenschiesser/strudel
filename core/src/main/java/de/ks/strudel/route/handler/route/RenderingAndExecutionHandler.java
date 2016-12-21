@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ks.strudel.route.handler;
+package de.ks.strudel.route.handler.route;
 
 import de.ks.strudel.Response;
 import de.ks.strudel.json.JsonParser;
@@ -30,6 +30,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
 import java.nio.ByteBuffer;
 
@@ -42,19 +43,25 @@ import java.nio.ByteBuffer;
 public class RenderingAndExecutionHandler implements HttpHandler {
   private final Provider<Request> request;
   private final Provider<Response> response;
-  private final Route route;
   private final TemplateEngineResolver templateEngineResolver;
   private final JsonResolver jsonResolver;
+  private Route route;
 
-  public RenderingAndExecutionHandler(Provider<Request> request, Provider<Response> response, Route route, TemplateEngineResolver templateEngineResolver, JsonResolver jsonResolver) {
+  @Inject
+  public RenderingAndExecutionHandler(Provider<Request> request, Provider<Response> response, TemplateEngineResolver templateEngineResolver, JsonResolver jsonResolver) {
     this.request = request;
     this.response = response;
-    this.route = route;
     this.templateEngineResolver = templateEngineResolver;
     this.jsonResolver = jsonResolver;
   }
 
-  @Override public void handleRequest(HttpServerExchange ex) throws Exception {
+  public RenderingAndExecutionHandler setRoute(Route route) {
+    this.route = route;
+    return this;
+  }
+
+  @Override
+  public void handleRequest(HttpServerExchange ex) throws Exception {
     Object retval = route.getHandler().handle(request.get(), response.get());
     if (route.isParseAsJson()) {
       if (retval == null) {
