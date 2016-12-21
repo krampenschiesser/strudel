@@ -17,6 +17,9 @@ package de.ks.strudel.route.handler;
 
 import javax.inject.Singleton;
 
+/**
+ * Used to keep track if current call is executed async or not
+ */
 @Singleton
 public class AsyncTracker {
   final ThreadLocal<Boolean> asyncRoute = new ThreadLocal<>();

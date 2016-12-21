@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * General WrappingHandler that executes exception handlers.
+ */
 public class ExceptionHandler extends WrappingHandler {
   private final Provider<Locale> localeProvider;
   private final ExceptionMappingRegistry exceptionMappingRegistry;

@@ -22,6 +22,10 @@ import javax.inject.Singleton;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * Stores handlers for exceptions.
+ * Each handler is a supplier which should generate a new instance of the exception handler.
+ */
 @Singleton
 public class ExceptionMappingRegistry {
   Map<Class<? extends Exception>, Supplier<HandlerNoReturn>> exceptionMappings = new CopyOnWriteMap<>();
