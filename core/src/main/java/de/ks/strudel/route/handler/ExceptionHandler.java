@@ -18,6 +18,7 @@ package de.ks.strudel.route.handler;
 import de.ks.strudel.HaltException;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Response;
+import de.ks.strudel.metrics.MetricsCallback;
 import de.ks.strudel.request.Request;
 import de.ks.strudel.route.HttpStatus;
 import io.undertow.server.HttpServerExchange;
@@ -27,6 +28,7 @@ import javax.inject.Provider;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -35,11 +37,18 @@ import java.util.function.Supplier;
 public class ExceptionHandler extends WrappingHandler {
   private final Provider<Locale> localeProvider;
   private final ExceptionMappingRegistry exceptionMappingRegistry;
+  private final AtomicReference<MetricsCallback> metricsReference = new AtomicReference<>();
 
   @Inject
   public ExceptionHandler(ExceptionMappingRegistry exceptionMappingRegistry, Provider<Locale> localeProvider) {
     this.exceptionMappingRegistry = exceptionMappingRegistry;
     this.localeProvider = localeProvider;
+  }
+
+  @com.google.inject.Inject(optional = true)
+  public ExceptionHandler setMetricsReference(MetricsCallback metrics) {
+    this.metricsReference.set(metrics);
+    return this;
   }
 
   @Override
@@ -54,6 +63,9 @@ public class ExceptionHandler extends WrappingHandler {
 
   @Override
   protected void handleException(Exception e, HttpServerExchange exchange) throws Exception {
+    if (metricsReference.get() != null) {
+      metricsReference.get().trackException(exchange, e);
+    }
     if (e instanceof HaltException) {
       HaltException halt = (HaltException) e;
       exchange.setStatusCode(halt.getStatus());

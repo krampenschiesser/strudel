@@ -18,6 +18,7 @@ package de.ks.strudel.route;
 import com.google.inject.Injector;
 import de.ks.strudel.HandlerNoReturn;
 import de.ks.strudel.Strudel;
+import de.ks.strudel.metrics.MetricsCallback;
 import de.ks.strudel.route.handler.ExceptionMappingRegistry;
 import de.ks.strudel.route.handler.main.AfterHandler;
 import de.ks.strudel.route.handler.main.BeforeHandler;
@@ -29,6 +30,7 @@ import io.undertow.attribute.ResponseHeaderAttribute;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
@@ -37,6 +39,8 @@ import io.undertow.util.Headers;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * Big behemoth handling registering the routes after {@link Strudel#start()}
@@ -44,6 +48,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class Router {
+  protected final AtomicReference<MetricsCallback> metricsReference = new AtomicReference<>();
   public static final int MTU = 1480;
   final MainRoutingHandler routing;
   final BeforeHandler before;
@@ -72,8 +77,28 @@ public class Router {
     this.before.setInvalidMethodHandler(null);
     this.after.setFallbackHandler(noop);
     this.after.setInvalidMethodHandler(null);
-    this.routing.setFallbackHandler(after);
-    this.routing.setInvalidMethodHandler(after);
+
+    Consumer<HttpServerExchange> unknownMetrics = exchange -> {
+      if (metricsReference.get() != null) {
+        String requestMethod = exchange.getRequestMethod().toString();
+        HttpMethod method = HttpMethod.valueOf(requestMethod);
+        metricsReference.get().trackUnknownRoute(exchange, method, exchange.getRequestURI());
+      }
+    };
+    this.routing.setFallbackHandler(exchange -> {
+      unknownMetrics.accept(exchange);
+      after.handleRequest(exchange);
+    });
+    this.routing.setInvalidMethodHandler(exchange -> {
+      unknownMetrics.accept(exchange);
+      after.handleRequest(exchange);
+    });
+  }
+
+  @com.google.inject.Inject(optional = true)
+  public Router setMetricsReference(MetricsCallback metrics) {
+    this.metricsReference.set(metrics);
+    return this;
   }
 
   private HttpHandler wrapInGzipHandler(HttpHandler handler) {

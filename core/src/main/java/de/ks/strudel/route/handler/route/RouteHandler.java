@@ -15,6 +15,7 @@
  */
 package de.ks.strudel.route.handler.route;
 
+import de.ks.strudel.metrics.MetricsCallback;
 import de.ks.strudel.request.RequestBodyParser;
 import de.ks.strudel.request.RequestFormParser;
 import de.ks.strudel.route.Route;
@@ -35,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class RouteHandler implements HttpHandler {
   protected final AtomicReference<Route> route = new AtomicReference<>();
+  protected final AtomicReference<MetricsCallback> metricsReference = new AtomicReference<>();
 
   protected final Provider<ExecuteAsAsyncHandler> executeAsAsyncProvider;
   protected final Provider<RequestScopeHandler> requestScopeHandlerProvider;
@@ -55,6 +57,12 @@ public class RouteHandler implements HttpHandler {
     this.formParserProvider = formParserProvider;
   }
 
+  @com.google.inject.Inject(optional = true)
+  public RouteHandler setMetricsReference(MetricsCallback metrics) {
+    this.metricsReference.set(metrics);
+    return this;
+  }
+
   public RouteHandler setRoute(Route route) {
     this.route.set(route);
     return this;
@@ -67,6 +75,10 @@ public class RouteHandler implements HttpHandler {
     bodyParser.setExchange(ex);
     formParser.setExchange(ex);
 
+    if (metricsReference.get() != null) {
+      metricsReference.get().trackRouteExecuted(ex, route.get());
+    }
+
     ExecuteAsAsyncHandler executeAsAsync = executeAsAsyncProvider.get();
     AsyncCallbackHandler asyncCallbackHandler = asyncCallbackHandlerProvider.get();
     RenderingAndExecutionHandler finalRouteHandler = finalRouteHandlerProvider.get();
@@ -77,6 +89,7 @@ public class RouteHandler implements HttpHandler {
     finalRouteHandler.setRoute(route.get());
     asyncCallbackHandler.setAsyncAfter(route.get().getAsyncAfter()).setAsyncBefore(route.get().getAsyncBefore());
     requestScopeHandler.setFormParser(formParser).setBodyParser(bodyParser);
+    requestScopeHandler.setRoute(route.get());
 
 
     if (route.get().isAsync()) {

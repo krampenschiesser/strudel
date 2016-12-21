@@ -17,9 +17,11 @@ package de.ks.strudel.route.handler.route;
 
 import de.ks.strudel.Response;
 import de.ks.strudel.localization.LocaleResolver;
+import de.ks.strudel.metrics.MetricsCallback;
 import de.ks.strudel.request.Request;
 import de.ks.strudel.request.RequestBodyParser;
 import de.ks.strudel.request.RequestFormParser;
+import de.ks.strudel.route.Route;
 import de.ks.strudel.route.handler.WrappingHandler;
 import de.ks.strudel.scope.RequestScope;
 import io.undertow.server.HttpServerExchange;
@@ -27,21 +29,32 @@ import io.undertow.server.HttpServerExchange;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Starts and stops the request scope.
  */
 @NotThreadSafe//new instance per route handling
 public class RequestScopeHandler extends WrappingHandler {
+  protected final AtomicReference<MetricsCallback> metricsReference = new AtomicReference<>();
   protected final RequestScope requestScope;
   protected final LocaleResolver localeResolver;
   protected RequestBodyParser bodyParser;
   protected RequestFormParser formParser;
 
+  protected long startTime;
+  private Route route;
+
   @Inject
   public RequestScopeHandler(RequestScope requestScope, LocaleResolver localeResolver) {
     this.requestScope = requestScope;
     this.localeResolver = localeResolver;
+  }
+
+  @com.google.inject.Inject(optional = true)
+  public RequestScopeHandler setMetricsReference(MetricsCallback metrics) {
+    this.metricsReference.set(metrics);
+    return this;
   }
 
   public RequestScopeHandler setBodyParser(RequestBodyParser bodyParser) {
@@ -54,8 +67,14 @@ public class RequestScopeHandler extends WrappingHandler {
     return this;
   }
 
+  public RequestScopeHandler setRoute(Route route) {
+    this.route = route;
+    return this;
+  }
+
   @Override
   protected boolean before(HttpServerExchange ex) {
+    startTime = System.nanoTime();
     Locale locale = localeResolver.getLocale(ex);
     Request request = new Request(ex, locale, bodyParser, formParser);
     Response response = new Response(ex);
@@ -66,5 +85,16 @@ public class RequestScopeHandler extends WrappingHandler {
   @Override
   protected void after(HttpServerExchange exchange) {
     requestScope.exit();
+    long took = System.nanoTime() - startTime;
+    MetricsCallback metricsCallback = metricsReference.get();
+    if (metricsCallback != null) {
+      if (route.isAsync()) {
+        metricsCallback.trackAsyncRouteCall();
+      } else {
+        metricsCallback.trackSyncRouteCall();
+      }
+      metricsCallback.trackRouteExecutionTime(exchange, route, took);
+    }
   }
+
 }

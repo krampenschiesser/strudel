@@ -15,12 +15,14 @@
  */
 package de.ks.strudel.route.handler.main;
 
+import de.ks.strudel.metrics.MetricsCallback;
 import de.ks.strudel.route.handler.ExceptionHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Wrapper that is active over the lifecycle of the application
@@ -33,6 +35,8 @@ public class MainHandler implements HttpHandler {
   protected final ExceptionHandler exceptionHandler;
   protected final BeforeAfterMainHandler beforeAfterMainHandler;
 
+  protected final AtomicReference<MetricsCallback> metricsReference = new AtomicReference<>();
+
   @Inject
   public MainHandler(AsyncRouteHandler asyncRouteHandler, EndExchangeHandler endExchangeHandler, ExceptionHandler exceptionHandler, BeforeAfterMainHandler beforeAfterMainHandler) {
     this.asyncRouteHandler = asyncRouteHandler;
@@ -41,8 +45,17 @@ public class MainHandler implements HttpHandler {
     this.beforeAfterMainHandler = beforeAfterMainHandler;
   }
 
+  @com.google.inject.Inject(optional = true)
+  public MainHandler setMetricsReference(MetricsCallback metrics) {
+    this.metricsReference.set(metrics);
+    return this;
+  }
+
   @Override
   public void handleRequest(HttpServerExchange exchange) throws Exception {
+    if (metricsReference.get() != null) {
+      metricsReference.get().trackExchange(exchange);
+    }
     asyncRouteHandler.setNext(endExchangeHandler);
     endExchangeHandler.setNext(exceptionHandler);
     exceptionHandler.setNext(beforeAfterMainHandler);

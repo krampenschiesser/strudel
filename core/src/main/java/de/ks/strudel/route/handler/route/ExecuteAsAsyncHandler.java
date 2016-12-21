@@ -26,9 +26,9 @@ import javax.inject.Inject;
  * Dispatches a itself to the worker thread
  */
 public class ExecuteAsAsyncHandler extends WrappingHandler {
+  protected final AsyncTracker asyncRoute;
 
   protected Route route;
-  protected final AsyncTracker asyncRoute;
 
   @Inject
   public ExecuteAsAsyncHandler(AsyncTracker asyncRoute) {
