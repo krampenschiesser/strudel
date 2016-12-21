@@ -22,6 +22,12 @@ allprojects {
     repositories {
         mavenCentral()
         mavenLocal()
+        maven {
+            url = "http://repository.jboss.org/nexus/content/groups/public"
+        }
+        maven {
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
     }
 
     apply plugin: "org.junit.platform.gradle.plugin"
