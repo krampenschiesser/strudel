@@ -24,7 +24,7 @@ public interface HandlerNoReturn {
    *
    * @param request  same instance as in the {@link de.ks.strudel.scope.RequestScope}
    *                 not filled when handling an exception
-   * @param response same instance as in the {@link de.ks.strudel.scope.RequestScope
+   * @param response same instance as in the {@link de.ks.strudel.scope.RequestScope}
    *                 not filled when handling an exception
    */
   void handle(Request request, Response response) throws Exception;

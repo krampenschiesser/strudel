@@ -45,7 +45,7 @@ public abstract class WrappingHandler implements HttpHandler {
   }
 
   /**
-   * @param exchange
+   * @param exchange e
    * @return true if execution should continue and call #next
    */
   protected abstract boolean before(HttpServerExchange exchange) throws Exception;

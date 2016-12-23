@@ -16,6 +16,11 @@ dependencies {
     testRuntime "ch.qos.logback:logback-classic:$logback"
 }
 
+task javadocJar (type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 task sourceJar(type: Jar) {
     from sourceSets.main.allJava
 }

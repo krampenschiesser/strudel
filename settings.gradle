@@ -1,3 +1,5 @@
+
+
 include "core"
 include "templateengines:freemarker"
 include "templateengines:handlebars"
@@ -7,6 +9,7 @@ include "templateengines:pebble"
 include "templateengines:thymeleaf"
 include "templateengines:trimou"
 include "metrics:avajemetric"
+include "metrics:dropwizard"
 include "json:gson"
 include "json:jackson"
 include "examples"
@@ -22,6 +25,7 @@ project(":templateengines:thymeleaf").name="strudel-template-thymeleaf"
 project(":templateengines:trimou").name="strudel-template-trimou"
 
 project(":metrics:avajemetric").name="strudel-metrics-avaje"
+project(":metrics:dropwizard").name="strudel-metrics-dropwizard"
 
 project(":json:gson").name="strudel-json-gson"
 project(":json:jackson").name="strudel-json-jackson"

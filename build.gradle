@@ -11,8 +11,12 @@ buildscript {
 }
 
 allprojects {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
     group "de.ks.strudel"
-    version "0.1.0-SNAPSHOT"
+    version versionString
 
     apply plugin: "java"
     apply plugin: "maven-publish"
@@ -24,9 +28,6 @@ allprojects {
         mavenLocal()
         maven {
             url = "http://repository.jboss.org/nexus/content/groups/public"
-        }
-        maven {
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
 
