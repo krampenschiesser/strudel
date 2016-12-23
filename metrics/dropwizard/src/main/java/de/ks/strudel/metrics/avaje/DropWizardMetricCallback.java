@@ -16,13 +16,16 @@
 package de.ks.strudel.metrics.avaje;
 
 import com.codahale.metrics.MetricRegistry;
+import de.ks.strudel.metrics.ExceptionHistory;
 import de.ks.strudel.metrics.MetricsCallback;
+import de.ks.strudel.metrics.StoredException;
 import de.ks.strudel.route.HttpMethod;
 import de.ks.strudel.route.Route;
 import io.undertow.server.HttpServerExchange;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 @Singleton
@@ -31,6 +34,7 @@ public class DropWizardMetricCallback implements MetricsCallback {
   public static final String syncCount = "asyncRouteCallCount";
   public static final String exchangeCount = "exchangeCount";
   public static final String exceptionCount = "exceptionCount";
+  public static final int MAX_EXCEPTIONS = 100;
 
   public static String routeExecution(Route route) {
     return routeExecution(route.getMethod(), route.getPath());
@@ -53,15 +57,18 @@ public class DropWizardMetricCallback implements MetricsCallback {
   }
 
   private final MetricRegistry metrics;
+  private final ExceptionHistory exceptionHistory;
 
   @Inject
-  public DropWizardMetricCallback(MetricRegistry metrics) {
+  public DropWizardMetricCallback(MetricRegistry metrics, ExceptionHistory exceptionHistory) {
     this.metrics = metrics;
+    this.exceptionHistory = exceptionHistory;
   }
 
   @Override
   public void trackException(HttpServerExchange exchange, Exception e) {
     metrics.counter(exceptionCount).inc();
+    exceptionHistory.trackException(e);
   }
 
   @Override
@@ -92,5 +99,9 @@ public class DropWizardMetricCallback implements MetricsCallback {
   @Override
   public void trackUnknownRoute(HttpServerExchange exchange, HttpMethod method, String url) {
     metrics.counter(unknownRoute(method, url)).inc();
+  }
+
+  public Collection<StoredException> getStoredExceptions() {
+    return exceptionHistory.getExceptions();
   }
 }

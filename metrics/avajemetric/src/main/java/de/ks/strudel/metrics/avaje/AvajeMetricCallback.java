@@ -15,7 +15,9 @@
  */
 package de.ks.strudel.metrics.avaje;
 
+import de.ks.strudel.metrics.ExceptionHistory;
 import de.ks.strudel.metrics.MetricsCallback;
+import de.ks.strudel.metrics.StoredException;
 import de.ks.strudel.route.HttpMethod;
 import de.ks.strudel.route.Route;
 import io.undertow.server.HttpServerExchange;
@@ -26,6 +28,7 @@ import org.avaje.metric.spi.PluginMetricManager;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.Collection;
 
 @Singleton
 public class AvajeMetricCallback implements MetricsCallback {
@@ -56,16 +59,19 @@ public class AvajeMetricCallback implements MetricsCallback {
 
   private final PluginMetricManager metricManager;
   private final int[] buckets;
+  private final ExceptionHistory exceptionHistory;
 
   @Inject
-  public AvajeMetricCallback(PluginMetricManager metricManager, @Named(AvajeMetricModule.METRIC_BUCKETS) int[] buckets) {
+  public AvajeMetricCallback(PluginMetricManager metricManager, @Named(AvajeMetricModule.METRIC_BUCKETS) int[] buckets, ExceptionHistory exceptionHistory) {
     this.metricManager = metricManager;
     this.buckets = buckets;
+    this.exceptionHistory = exceptionHistory;
   }
 
   @Override
   public void trackException(HttpServerExchange exchange, Exception e) {
     metricManager.getCounterMetric(exceptionCount).markEvent();
+    exceptionHistory.trackException(e);
   }
 
   @Override
@@ -96,5 +102,9 @@ public class AvajeMetricCallback implements MetricsCallback {
   @Override
   public void trackUnknownRoute(HttpServerExchange exchange, HttpMethod method, String url) {
     metricManager.getCounterMetric(unknownRoute(method, url)).markEvent();
+  }
+
+  public Collection<StoredException> getStoredExceptions() {
+    return exceptionHistory.getExceptions();
   }
 }

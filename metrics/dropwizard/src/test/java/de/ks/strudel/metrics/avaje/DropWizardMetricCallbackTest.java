@@ -5,6 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.ks.strudel.Strudel;
 import de.ks.strudel.StrudelModule;
+import de.ks.strudel.metrics.StoredException;
 import de.ks.strudel.route.HttpMethod;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,6 +47,8 @@ class DropWizardMetricCallbackTest {
 
   @Inject
   MetricRegistry metrics;
+  @Inject
+  DropWizardMetricCallback metricCallback;
 
   @Test
   void exception() {
@@ -59,8 +63,15 @@ class DropWizardMetricCallbackTest {
     RestAssured.get("/sync");
     RestAssured.get("/async");
 
-
     assertEquals(2, metrics.counter(DropWizardMetricCallback.exceptionCount).getCount());
+
+    RestAssured.get("/sync");
+    int size = metricCallback.getStoredExceptions().size();
+    log.info("Keys: {}", metricCallback.getStoredExceptions().stream().map(s -> Objects.hashCode(s.getKey())));
+    assertEquals(2, size);
+
+    StoredException syncCallException = metricCallback.getStoredExceptions().stream().filter(s -> !s.getFirstOccurance().equals(s.getLastOccurance())).findFirst().get();
+    assertEquals(2, syncCallException.getCount());
   }
 
   @Test
