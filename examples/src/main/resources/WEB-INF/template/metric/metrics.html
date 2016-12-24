@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+{{> metric/header.html }}
+<body>
+<div class="container grid-960">
+  <div class="columns">
+    <div class="column">
+      <h3>Click on the following links and look at the metrics</h3>
+      <ul>
+        <li><a href="/an-unknown-route">Click for an unknown route</a></li>
+        <li><a href="/random-time-out">Click for a randomly timed route</a></li>
+        <li><a href="/hello">Click for a simple route</a></li>
+        <li><a href="/exception">Click for a route with exception</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="container grid-960">
+  <div class="columns">
+    <div class="column">
+      <div id="metrics">
+        {{> metric/allmetrics.html }}
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

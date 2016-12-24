@@ -22,16 +22,18 @@ import de.ks.strudel.route.HttpMethod;
 import de.ks.strudel.route.Route;
 import io.undertow.server.HttpServerExchange;
 import org.avaje.metric.MetricName;
+import org.avaje.metric.TimedEvent;
 import org.avaje.metric.core.DefaultMetricName;
 import org.avaje.metric.spi.PluginMetricManager;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Collection;
 
 @Singleton
-public class AvajeMetricCallback implements MetricsCallback {
+public class AvajeMetricCallback implements MetricsCallback<TimedEvent> {
   public static final MetricName asyncCount = new DefaultMetricName("de.ks", "async", "count");
   public static final MetricName syncCount = new DefaultMetricName("de.ks", "sync", "count");
   public static final MetricName exchangeCount = new DefaultMetricName("de.ks", "exchange", "count");
@@ -81,7 +83,17 @@ public class AvajeMetricCallback implements MetricsCallback {
 
   @Override
   public void trackRouteExecutionTime(HttpServerExchange exchange, Route route, long timeInNs) {
-    metricManager.getBucketTimedMetric(routeExecutionTime(route), buckets).addEventDuration(true, timeInNs);
+//    metricManager.getBucketTimedMetric(routeExecutionTime(route), buckets).addEventDuration(true, timeInNs);
+  }
+
+  @Override
+  public TimedEvent beforeRouteExecution(HttpServerExchange exchange, Route route) {
+    return metricManager.getBucketTimedMetric(routeExecutionTime(route), buckets).startEvent();
+  }
+
+  @Override
+  public void afterRouteExecution(HttpServerExchange exchange, Route route, @Nullable Exception e, TimedEvent stopWatch) {
+    stopWatch.end(e == null);
   }
 
   @Override

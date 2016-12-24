@@ -20,6 +20,7 @@ import de.ks.strudel.route.Route;
 import io.undertow.server.HttpServerExchange;
 import org.junit.jupiter.api.Assertions;
 
+import javax.annotation.Nullable;
 import javax.inject.Singleton;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,16 @@ public class TestMetricsCallback implements MetricsCallback {
   public void trackRouteExecutionTime(HttpServerExchange exchange, Route route, long timeInNs) {
     Assertions.assertNotNull(exchange);
     routeTime.put(route.getPath(), timeInNs);
+  }
+
+  @Override
+  public Object beforeRouteExecution(HttpServerExchange exchange, Route route) {
+    return null;
+  }
+
+  @Override
+  public void afterRouteExecution(HttpServerExchange exchange, Route route, @Nullable Exception e, Object stopWatch) {
+
   }
 
   @Override

@@ -1,0 +1,19 @@
+<canvas id="myChart" width="400" height="200"></canvas>
+<script>
+    $.getJSON("/timedroute", function (timedRouteData) {
+        var ctx = document.getElementById("myChart");
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: timedRouteData,
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    });
+</script>

@@ -19,11 +19,13 @@ import de.ks.strudel.route.HttpMethod;
 import de.ks.strudel.route.Route;
 import io.undertow.server.HttpServerExchange;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface used for metrics.
  * Once an instance is bound to this interface metrics will be automatically collected.
  */
-public interface MetricsCallback {
+public interface MetricsCallback<T> {
   /**
    * Tracks exceptions beeing thrown by handlers
    *
@@ -34,18 +36,40 @@ public interface MetricsCallback {
 
   /**
    * Tracks a call of a route(before executing the handler)
+   *
    * @param exchange e
-   * @param route r
+   * @param route    r
    */
   void trackRouteExecuted(HttpServerExchange exchange, Route route);
 
   /**
    * Tracks execution time of a route. Use this to detect slow handlers
+   *
    * @param exchange e
-   * @param route r
+   * @param route    r
    * @param timeInNs nanosecond
    */
   void trackRouteExecutionTime(HttpServerExchange exchange, Route route, long timeInNs);
+
+  /**
+   * Executed before a route is executed. Used eg. to start timers.
+   *
+   * @param exchange exchange
+   * @param route    route
+   * @return a metric specific object, usually a container for a stopwatch
+   */
+  T beforeRouteExecution(HttpServerExchange exchange, Route route);
+
+  /**
+   * Called after a route execution (success and failure).
+   * Used to eg. stop a timer
+   *
+   * @param exchange  exchange
+   * @param route     route
+   * @param e         an exception if thrown by the route handler, might be null
+   * @param stopWatch the metric specific object (eg. stopwatch) returned by {@link #beforeRouteExecution(HttpServerExchange, Route)}
+   */
+  void afterRouteExecution(HttpServerExchange exchange, Route route, @Nullable Exception e, T stopWatch);
 
   /**
    * For counting how many synchronous routes were called
@@ -59,6 +83,7 @@ public interface MetricsCallback {
 
   /**
    * Tracks every exchange that is passed into the root handler
+   *
    * @param exchange e
    */
   void trackExchange(HttpServerExchange exchange);
@@ -67,8 +92,8 @@ public interface MetricsCallback {
    * Tracks calls to routes that are not mapped.
    *
    * @param exchange e
-   * @param method http method of the call
-   * @param url of the call
+   * @param method   http method of the call
+   * @param url      of the call
    */
   void trackUnknownRoute(HttpServerExchange exchange, HttpMethod method, String url);
 }

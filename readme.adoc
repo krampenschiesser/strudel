@@ -524,57 +524,8 @@ All template engines are @Singleton / soft singletons that are global for your i
 
 == Metrics
 
-Strudel provides a basic interface for metrics the *MetricsCallback*.
-[source,java]
-----
-
-  /**
-   * Tracks exceptions beeing thrown by handlers
-   * @param exchange e
-   * @param e e
-   */
-  void trackException(HttpServerExchange exchange, Exception e);
-
-  /**
-   * Tracks a call of a route(before executing the handler)
-   * @param exchange e
-   * @param route r
-   */
-  void trackRouteExecuted(HttpServerExchange exchange, Route route);
-
-  /**
-   * Tracks execution time of a route. Use this to detect slow handlers
-   * @param exchange e
-   * @param route r
-   * @param timeInNs nanosecond
-   */
-  void trackRouteExecutionTime(HttpServerExchange exchange, Route route, long timeInNs);
-
-  /**
-   * For counting how many synchronous routes were called
-   */
-  void trackSyncRouteCall();
-
-  /**
-   * For counting how many asynchronous routes were called
-   */
-  void trackAsyncRouteCall();
-
-  /**
-   * Tracks every exchange that is passed into the root handler
-   * @param exchange e
-   */
-  void trackExchange(HttpServerExchange exchange);
-
-  /**
-   * Tracks calls to routes that are not mapped.
-   *
-   * @param exchange e
-   * @param method http method of the call
-   * @param url of the call
-   */
-  void trackUnknownRoute(HttpServerExchange exchange, HttpMethod method, String url);
-----
+Strudel provides a basic interface for metrics the
+link:core/src/main/java/de/ks/strudel/metrics/MetricsCallback.java[*MetricsCallback*].
 
 With this interface you can collect basic statistics about your application to identify slow handlers,
 exceptions and unknown routes.
@@ -592,6 +543,8 @@ WARNING: Avaje metrics is a static-singleton library and I use manually created 
  Stick to Dropwizard. That's the cool stuff anyway.
 
 I strongly recommend using the dropwizard implementation.
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/metrics/MetricsExample.java[*MetricsExample*]
 
 === Exception history
 

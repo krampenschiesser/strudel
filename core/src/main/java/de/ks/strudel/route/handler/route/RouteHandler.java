@@ -39,6 +39,7 @@ public class RouteHandler implements HttpHandler {
   protected final AtomicReference<MetricsCallback> metricsReference = new AtomicReference<>();
 
   protected final Provider<ExecuteAsAsyncHandler> executeAsAsyncProvider;
+  protected final Provider<RouteTimingHandler> routeTimingHandlerProvider;
   protected final Provider<RequestScopeHandler> requestScopeHandlerProvider;
   protected final Provider<ExceptionHandler> exceptionHandlerProvider;
   protected final Provider<AsyncCallbackHandler> asyncCallbackHandlerProvider;
@@ -47,7 +48,7 @@ public class RouteHandler implements HttpHandler {
   protected final Provider<RequestFormParser> formParserProvider;
 
   @Inject
-  public RouteHandler(Provider<ExecuteAsAsyncHandler> executeAsAsyncProvider, Provider<RequestScopeHandler> requestScopeHandlerProvider, Provider<ExceptionHandler> exceptionHandlerProvider, Provider<AsyncCallbackHandler> asyncCallbackHandlerProvider, Provider<RenderingAndExecutionHandler> finalRouteHandlerProvider, Provider<RequestBodyParser> bodyParserProvider, Provider<RequestFormParser> formParserProvider) {
+  public RouteHandler(Provider<ExecuteAsAsyncHandler> executeAsAsyncProvider, Provider<RequestScopeHandler> requestScopeHandlerProvider, Provider<ExceptionHandler> exceptionHandlerProvider, Provider<AsyncCallbackHandler> asyncCallbackHandlerProvider, Provider<RenderingAndExecutionHandler> finalRouteHandlerProvider, Provider<RequestBodyParser> bodyParserProvider, Provider<RequestFormParser> formParserProvider, Provider<RouteTimingHandler> routeTimingHandlerProvider) {
     this.executeAsAsyncProvider = executeAsAsyncProvider;
     this.requestScopeHandlerProvider = requestScopeHandlerProvider;
     this.exceptionHandlerProvider = exceptionHandlerProvider;
@@ -55,6 +56,7 @@ public class RouteHandler implements HttpHandler {
     this.finalRouteHandlerProvider = finalRouteHandlerProvider;
     this.bodyParserProvider = bodyParserProvider;
     this.formParserProvider = formParserProvider;
+    this.routeTimingHandlerProvider = routeTimingHandlerProvider;
   }
 
   @com.google.inject.Inject(optional = true)
@@ -80,30 +82,33 @@ public class RouteHandler implements HttpHandler {
     }
 
     ExecuteAsAsyncHandler executeAsAsync = executeAsAsyncProvider.get();
-    AsyncCallbackHandler asyncCallbackHandler = asyncCallbackHandlerProvider.get();
-    RenderingAndExecutionHandler finalRouteHandler = finalRouteHandlerProvider.get();
+    RouteTimingHandler routeTimingHandler = routeTimingHandlerProvider.get();
     RequestScopeHandler requestScopeHandler = requestScopeHandlerProvider.get();
     ExceptionHandler exceptionHandler = exceptionHandlerProvider.get();
+    AsyncCallbackHandler asyncCallbackHandler = asyncCallbackHandlerProvider.get();
+    RenderingAndExecutionHandler finalRouteHandler = finalRouteHandlerProvider.get();
 
     executeAsAsync.setRoute(route.get());
     finalRouteHandler.setRoute(route.get());
     asyncCallbackHandler.setAsyncAfter(route.get().getAsyncAfter()).setAsyncBefore(route.get().getAsyncBefore());
     requestScopeHandler.setFormParser(formParser).setBodyParser(bodyParser);
     requestScopeHandler.setRoute(route.get());
-
+    routeTimingHandler.setRoute(route.get());
 
     if (route.get().isAsync()) {
-      executeAsAsync.setNext(requestScopeHandler);
+      executeAsAsync.setNext(routeTimingHandler);
+      routeTimingHandler.setNext(requestScopeHandler);
       requestScopeHandler.setNext(exceptionHandler);
       exceptionHandler.setNext(asyncCallbackHandler);
       asyncCallbackHandler.setNext(finalRouteHandler);
 
       executeAsAsync.handleRequest(ex);
     } else {
+      routeTimingHandler.setNext(requestScopeHandler);
       requestScopeHandler.setNext(asyncCallbackHandler);
       asyncCallbackHandler.setNext(finalRouteHandler);
 
-      requestScopeHandler.handleRequest(ex);
+      routeTimingHandler.handleRequest(ex);
     }
   }
 }

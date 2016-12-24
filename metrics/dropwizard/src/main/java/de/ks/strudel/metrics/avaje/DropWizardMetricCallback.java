@@ -16,6 +16,7 @@
 package de.ks.strudel.metrics.avaje;
 
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import de.ks.strudel.metrics.ExceptionHistory;
 import de.ks.strudel.metrics.MetricsCallback;
 import de.ks.strudel.metrics.StoredException;
@@ -26,22 +27,24 @@ import io.undertow.server.HttpServerExchange;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
 @Singleton
-public class DropWizardMetricCallback implements MetricsCallback {
+public class DropWizardMetricCallback implements MetricsCallback<Timer.Context> {
   public static final String asyncCount = "syncRouteCallCount";
   public static final String syncCount = "asyncRouteCallCount";
   public static final String exchangeCount = "exchangeCount";
   public static final String exceptionCount = "exceptionCount";
   public static final int MAX_EXCEPTIONS = 100;
+  public static final String UNKNOWNROUTE_PREFIX = "unknownroute:";
+  public static final String ROUTE_PREFIX = "call:";
+  public static final String TIME_PREFIX = "time:";
 
   public static String routeExecution(Route route) {
     return routeExecution(route.getMethod(), route.getPath());
   }
 
   public static String routeExecution(HttpMethod method, String path) {
-    return "call:" + method + ":" + path;
+    return ROUTE_PREFIX + method + ":" + path;
   }
 
   public static String routeExecutionTime(Route route) {
@@ -49,11 +52,11 @@ public class DropWizardMetricCallback implements MetricsCallback {
   }
 
   public static String routeExecutionTime(HttpMethod method, String path) {
-    return "time:" + method.getMethod() + ":" + path;
+    return TIME_PREFIX + method.getMethod() + ":" + path;
   }
 
   public static String unknownRoute(HttpMethod method, String url) {
-    return "unknownroute:" + method.name() + ":" + url;
+    return UNKNOWNROUTE_PREFIX + method.name() + ":" + url;
   }
 
   private final MetricRegistry metrics;
@@ -78,7 +81,17 @@ public class DropWizardMetricCallback implements MetricsCallback {
 
   @Override
   public void trackRouteExecutionTime(HttpServerExchange exchange, Route route, long timeInNs) {
-    metrics.timer(routeExecutionTime(route)).update(timeInNs, TimeUnit.NANOSECONDS);
+//    metrics.timer(routeExecutionTime(route)).update(timeInNs, TimeUnit.NANOSECONDS);
+  }
+
+  @Override
+  public Timer.Context beforeRouteExecution(HttpServerExchange exchange, Route route) {
+    return metrics.timer(routeExecutionTime(route)).time();
+  }
+
+  @Override
+  public void afterRouteExecution(HttpServerExchange exchange, Route route, Exception e, Timer.Context stopWatch) {
+    stopWatch.stop();
   }
 
   @Override
