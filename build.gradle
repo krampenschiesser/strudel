@@ -19,7 +19,9 @@ allprojects {
     version versionString
 
     apply plugin: "java"
-    apply plugin: "maven-publish"
+//    apply plugin: "maven-publish"
+    apply plugin: 'maven'
+    apply plugin: 'signing'
 
     sourceCompatibility = 1.8
 
@@ -40,5 +42,71 @@ allprojects {
         testCompile "io.rest-assured:rest-assured:$restassured"
 
         testRuntime "org.junit.jupiter:junit-jupiter-engine:$junit"
+    }
+
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar, sourcesJar, jar
+    }
+
+//    signing {
+//        sign configurations.archives
+//    }
+    def ignoreProjects = ["templateengines", "strudel", "metrics", "json", "examples"]
+
+    if(!ignoreProjects.contains(project.name))
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+//                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                repository(url: "file://D/bla")
+//                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+//                    authentication(userName: ossrhUsername, password: ossrhPassword)
+//                }
+//
+//                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+//                    authentication(userName: ossrhUsername, password: ossrhPassword)
+//                }
+
+                pom.project {
+                    name project.name
+                    packaging 'jar'
+                    // optionally artifactId can be defined here
+                    description project.description
+                    url 'https://github.com/krampenschiesser/strudel'
+
+                    scm {
+                        connection 'https://github.com/krampenschiesser/strudel.git'
+                        developerConnection 'https://github.com/krampenschiesser/strudel.git'
+                        url 'https://github.com/krampenschiesser/strudel'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'krampenschiesser'
+                            name 'Christian Löhnert'
+                            email 'krampenschiesser@freenet.de'
+                        }
+                    }
+                }
+            }
+        }
     }
 }

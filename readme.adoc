@@ -1,11 +1,6 @@
 = Strudel micro web framework
 :toc:
 
-WARNING: I am currently waiting for my
-https://github.com/undertow-io/undertow/commit/33a8ce4496efae246fccdb24974e1bd7b42c6104[wildcard route commit]
-to be merged into one of the release branches of undertow and make it into a release.
-When this is done I can finally release strudel otherwise wildcards would not be supported.
-
 Strudel is heavily inspired by the http://http://sparkjava.com/[Sparkjava] framework, well it is basically a copy.
 Why copy it? +
 

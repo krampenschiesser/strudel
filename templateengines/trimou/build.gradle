@@ -3,20 +3,8 @@ dependencies {
     compile project(":strudel-core")
 }
 
-
 task sourceJar(type: Jar) {
     from sourceSets.main.allJava
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-
-            from components.java
-
-            artifact sourceJar {
-                classifier "sources"
-            }
-        }
-    }
-}
+description "Integration of trimou templates"
