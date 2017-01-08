@@ -73,7 +73,7 @@ public class RenderingAndExecutionHandler implements HttpHandler {
         retval = jsonParser.toString(retval);
       }
     }
-    if (route.getTemplateEngine() != null) {
+    if (route.getTemplateEngine() != null && retval != null) {
       retval = renderTemplate(retval);
     }
     if (retval != null) {
