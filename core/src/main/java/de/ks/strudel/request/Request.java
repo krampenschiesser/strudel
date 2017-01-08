@@ -132,7 +132,9 @@ public class Request {
     return exchange.getRequestHeaders();
   }
 
-  public @Nullable String queryParameterFirst(String key) {
+  public
+  @Nullable
+  String queryParameterValue(String key) {
     return queryParameter(key).peekFirst();
   }
 
@@ -148,7 +150,9 @@ public class Request {
    * @param key path param
    * @return null
    */
-  public @Nullable String pathParameterFirst(String key) {
+  public
+  @Nullable
+  String pathParameterValue(String key) {
     return pathParameter(key).peekFirst();
   }
 
