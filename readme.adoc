@@ -340,6 +340,21 @@ I implemented a request scope that lets you inject the current *Request*, *Respo
 
 TIP: See example link:examples/src/main/java/de/ks/strudel/guice/scope/MyBean.java[*RequestScopeExample*]
 
+
+=== Https
+
+Starting undertow with https is also pretty simple
+There are 2 ways to do this:
+
+. Use the options().secure method to create a sslcontext
+[source,java]
+strudel.options().secure("/secure/keystore.jks", "password");
+. Create your own guice provider of SSLContext
+[source,java]
+javax.net.ssl.SSLContext
+
+TIP: See example link:examples/src/main/java/de/ks/strudel/https/HttpsExample.java[*HttpsExample*]
+
 == Template enines
 
 Strudel has build in support for multiple template engines:
